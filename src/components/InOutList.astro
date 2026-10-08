@@ -1,0 +1,42 @@
+---
+// "Wat er is en wat er niet is": two columns with ticks and crosses (briefing chapter 8.4).
+import Icon from './Icon.astro';
+import RichText from './RichText.astro';
+import type { Inline } from '../lib/copy';
+
+interface Props {
+  yesTitle: string;
+  yes: Inline[][];
+  noTitle: string;
+  no: Inline[][];
+}
+const { yesTitle, yes, noTitle, no } = Astro.props;
+---
+
+<div class="inout">
+  <div class="inout__col">
+    <h3 class="inout__title">{yesTitle}</h3>
+    <ul role="list">
+      {yes.map((i) => <li><Icon name="check" size={20} class="inout__yes" /><span><RichText inline={i} /></span></li>)}
+    </ul>
+  </div>
+  <div class="inout__col">
+    <h3 class="inout__title">{noTitle}</h3>
+    <ul role="list">
+      {no.map((i) => <li><Icon name="x" size={20} class="inout__no" /><span><RichText inline={i} /></span></li>)}
+    </ul>
+  </div>
+</div>
+
+<style>
+  .inout { display: grid; gap: var(--sp-8); }
+  .inout__col { padding: var(--sp-6); background: var(--c-offwhite); border: var(--border-card); border-radius: var(--radius-card); }
+  .inout__title { margin-bottom: var(--sp-4); font-family: var(--font-body); font-size: 1rem; font-weight: 700; letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+  .inout ul { display: grid; gap: var(--sp-3); }
+  .inout li { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-3); align-items: start; }
+  .inout :global(.inout__yes) { color: var(--c-green-olive); margin-top: 3px; }
+  .inout :global(.inout__no) { color: var(--c-brown); margin-top: 3px; }
+  @media (min-width: 800px) {
+    .inout { grid-template-columns: 1fr 1fr; }
+  }
+</style>

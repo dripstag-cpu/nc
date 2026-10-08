@@ -1,0 +1,9 @@
+---
+// /cookies/: concept text page (copy from cookies.md), rendered with CopyPage
+import CopyPage from '../components/CopyPage.astro';
+import { pageCopy } from '../lib/page-copy';
+
+const copy = await pageCopy('cookies');
+---
+
+<CopyPage copy={copy} />

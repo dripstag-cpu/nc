@@ -1,0 +1,9 @@
+---
+// /algemene-voorwaarden/: concept text page (copy from algemene-voorwaarden.md), rendered with CopyPage
+import CopyPage from '../components/CopyPage.astro';
+import { pageCopy } from '../lib/page-copy';
+
+const copy = await pageCopy('algemene-voorwaarden');
+---
+
+<CopyPage copy={copy} />

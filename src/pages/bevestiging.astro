@@ -1,0 +1,14 @@
+---
+// /bevestiging/: thank-you page, success URL in Tommy (noindex, not in the sitemap)
+import CopyPage from '../components/CopyPage.astro';
+import { pageCopy } from '../lib/page-copy';
+
+const copy = await pageCopy('bevestiging');
+---
+
+<CopyPage
+  copy={copy}
+  noindex
+  introSection="Intro"
+  links={{ 'Terug naar de homepage': '/', 'Bekijk de omgeving': '/omgeving/' }}
+/>

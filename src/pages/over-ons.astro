@@ -1,0 +1,90 @@
+---
+// /over-ons/: after the Over ons mockup (page 8). Copy from over-ons.md.
+// No portrait of unknown people as "the owners": their story is a placeholder (copy note).
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import SplitFeature from '../components/SplitFeature.astro';
+import QuoteBand from '../components/QuoteBand.astro';
+import IconRow from '../components/IconRow.astro';
+import RichText from '../components/RichText.astro';
+import Ornament from '../components/Ornament.astro';
+import Placeholder from '../components/Placeholder.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site';
+import { breadcrumbs } from '../data/jsonld';
+import { img } from '../data/images';
+import { pageCopy } from '../lib/page-copy';
+import { section, toPlain } from '../lib/copy';
+import { listItems, need } from '../lib/sections';
+import type { IconName } from '../components/icon-names';
+
+const copy = await pageCopy('over-ons');
+const what = need(section(copy, 'Wat Naescas is'), 'Wat Naescas is');
+const owners = need(section(copy, 'De naam en de eigenaren'), 'De naam en de eigenaren');
+const expect = need(section(copy, 'Wat je van ons mag verwachten'), 'Wat je van ons mag verwachten');
+const visit = section(copy, 'Kom langs');
+const valueIcons: IconName[] = ['person', 'leaf', 'users', 'home'];
+---
+
+<BaseLayout
+  title={copy.meta.title}
+  description={copy.meta.description}
+  jsonLd={breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Over ons', path: copy.meta.slug }])}
+>
+  <PageHero title={copy.meta.h1} sub="Wie zijn wij" image={img.stel} split />
+
+  <section class="section bg-offwhite" aria-labelledby="what-title">
+    <div class="container reveal">
+      <SplitFeature images={[img.naambord, img.mokken]}>
+        <p class="accent about-script">Welkom bij Naescas</p>
+        <h2 id="what-title" class="about-h2">{what.name}</h2>
+        <RichText blocks={what.blocks} />
+        <h2 class="about-h2 about-h2--second">{owners.name}</h2>
+        <RichText blocks={owners.blocks} />
+        <Ornament class="about-ornament" />
+      </SplitFeature>
+    </div>
+  </section>
+
+  <QuoteBand image={img.weide} title="Onze visie">
+    <p><Placeholder text="de visie van Rob en Manon in drie zinnen" /></p>
+  </QuoteBand>
+
+  <section class="section bg-paper about-values" aria-labelledby="expect-title">
+    <div class="container reveal">
+      <h2 id="expect-title" class="about-center">{expect.name}</h2>
+      <IconRow caps={false} items={listItems(expect.blocks).map((i, n) => ({ icon: valueIcons[n] ?? 'leaf', title: toPlain(i) }))} />
+    </div>
+  </section>
+
+  <section class="section bg-offwhite" aria-labelledby="visit-title">
+    <div class="container reveal"><div class="about-visit">
+      <div>
+        <h2 id="visit-title">{visit?.name ?? 'Kom langs'}</h2>
+        <ul role="list" class="about-visit__facts">
+          <li><Icon name="pin" size={24} /><span>{site.name}, {site.address.street}, {site.address.postalCode} {site.address.city}{!site.address.confirmed && <Fragment> <Placeholder text="adres bevestigen" /></Fragment>}</span></li>
+          <li><Icon name="clock" size={24} /><span>Openingstijden receptie: <Placeholder text="openingstijden receptie" /></span></li>
+        </ul>
+      </div>
+      <div class="about-visit__ctas">
+        <a class="btn btn--primary" href="/beschikbaarheid/"><Icon name="calendar" size={19} />{visit?.buttons[0]?.label ?? 'Bekijk beschikbaarheid'}</a>
+        <a class="btn btn--secondary" href="/contact/#route">Route plannen</a>
+      </div>
+    </div></div>
+  </section>
+</BaseLayout>
+
+<style>
+  .about-script { font-size: clamp(2.5rem, 1.6vw + 2rem, 3.25rem); color: var(--c-green-dark); transform: rotate(-2deg); transform-origin: left; }
+  .about-h2 { margin-block: var(--sp-4) var(--sp-3); font-size: clamp(1.75rem, 1vw + 1.4rem, 2.25rem); }
+  .section :global(.about-ornament) { margin-top: var(--sp-6); }
+  .about-values { padding-block: var(--sp-12); }
+  .about-h2--second { margin-top: var(--sp-10); }
+  .about-center { margin-bottom: var(--sp-8); text-align: center; font-size: clamp(1.75rem, 1vw + 1.4rem, 2.25rem); }
+  .about-visit { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-6); padding: var(--sp-8); background: var(--c-paper) var(--grain); border: var(--border-card); border-radius: var(--radius-card); }
+  .about-visit h2 { font-size: clamp(1.75rem, 1vw + 1.4rem, 2.25rem); }
+  .about-visit__facts { display: grid; gap: var(--sp-2); margin-top: var(--sp-3); }
+  .about-visit__facts li { display: flex; align-items: flex-start; gap: var(--sp-3); font-size: 1rem; }
+  .about-visit__facts :global(svg) { flex: none; color: var(--c-green-olive); margin-top: 2px; }
+  .about-visit__ctas { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
+</style>

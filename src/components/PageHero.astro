@@ -1,0 +1,102 @@
+---
+// Photo hero for sub pages after ref-05 and ref-07 (Verblijf, Over ons, Omgeving, Horeca, Camping):
+// dark green gradient from the left, ornament, H1, sub line; optional handwritten line on the right.
+// Image is the LCP element on these pages.
+import { Picture } from 'astro:assets';
+import Ornament from './Ornament.astro';
+import type { Img } from '../data/images';
+
+interface Props {
+  title: string;
+  sub?: string;
+  image: Img;
+  accent?: string;
+  /** the photo is the clean right part of the mockup hero (ref-05): it fills the right side,
+   *  the left side is dark green with a gradient into the photo, as in the mockup */
+  split?: boolean;
+}
+const { title, sub, image, accent, split = false } = Astro.props;
+---
+
+<section class:list={['page-hero', { 'page-hero--split': split }]} data-hero aria-labelledby="page-title">
+  <Picture
+    class="page-hero__img"
+    src={image.src}
+    alt={image.alt}
+    formats={['avif', 'webp']}
+    widths={[800, 1200, 1600, 2000].filter((w) => w <= image.src.width)}
+    sizes="100vw"
+    loading="eager"
+    fetchpriority="high"
+    decoding="async"
+  />
+  <div class="page-hero__shade" aria-hidden="true"></div>
+  <div class="container page-hero__content on-dark">
+    <div class="page-hero__text">
+      <Ornament class="page-hero__ornament" line={84} />
+      <h1 id="page-title">{title}</h1>
+      {sub && <p class="page-hero__sub">{sub}</p>}
+      <div class="page-hero__extra"><slot /></div>
+    </div>
+    {accent && (
+      <p class="accent page-hero__accent">
+        <span class="page-hero__accent-text">{accent.split('\n').map((l, i) => <Fragment>{i > 0 && <br />}{l}</Fragment>)}</span>
+        <Ornament class="page-hero__ornament" line={34} />
+      </p>
+    )}
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    min-height: 56svh;
+    overflow: hidden;
+    background: var(--c-green-dark);
+    color: var(--c-offwhite);
+  }
+  .page-hero :global(picture) { position: absolute; inset: 0; }
+  .page-hero :global(.page-hero__img) { width: 100%; height: 100%; object-fit: cover; }
+  .page-hero__shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(24, 46, 30, 0.92) 0%, rgba(24, 46, 30, 0.6) 45%, rgba(24, 46, 30, 0.1) 80%);
+  }
+  .page-hero__content {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--sp-6);
+    padding-block: var(--sp-20) var(--sp-10);
+  }
+  .page-hero__text { max-width: 36rem; }
+  .page-hero h1 { margin-top: var(--sp-3); color: var(--c-offwhite); font-size: clamp(2.5rem, 2vw + 1.9rem, 3.5rem); font-weight: 500; line-height: 1.05; }
+  .page-hero :global(.page-hero__ornament) { color: var(--c-offwhite); }
+  .page-hero :global(.page-hero__ornament .ornament__line) { opacity: 0.7; }
+  .page-hero__sub { margin-top: var(--sp-4); font-size: 1.125rem; line-height: 1.55; max-width: 30em; color: var(--c-offwhite); }
+  .page-hero__extra:not(:empty) { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); margin-top: var(--sp-6); }
+  .page-hero__extra :global(p) { flex-basis: 100%; color: var(--c-cream); }
+  .page-hero__accent { display: grid; justify-items: center; gap: var(--sp-3); color: var(--c-offwhite); text-align: center; text-shadow: 0 1px 12px rgba(10, 24, 14, 0.5); }
+  .page-hero__accent-text { display: block; transform: rotate(-5deg); line-height: 1.2; }
+  @media (min-width: 900px) {
+    /* mockup proportions: ref-05 hero 507 x 205 (2.5 : 1), ref-07 hero 1535 x 488 (3.1 : 1) */
+    .page-hero { min-height: clamp(400px, 34vw, 540px); align-items: center; }
+    .page-hero--split :global(picture) { left: 38%; }
+    .page-hero--split :global(.page-hero__img) { object-position: 25% 35%; }
+    .page-hero--split .page-hero__shade {
+      background:
+        linear-gradient(to right, var(--c-green-dark) 0%, var(--c-green-dark) 38%, rgba(34, 66, 43, 0.85) 44%, rgba(34, 66, 43, 0.3) 56%, rgba(34, 66, 43, 0) 68%);
+    }
+    .page-hero__shade {
+      background:
+        linear-gradient(to right, rgba(24, 46, 30, 0.88) 0%, rgba(24, 46, 30, 0.6) 32%, rgba(24, 46, 30, 0.1) 60%, rgba(24, 46, 30, 0) 75%),
+        linear-gradient(to left, rgba(24, 46, 30, 0.45) 0%, rgba(24, 46, 30, 0) 30%);
+    }
+    .page-hero__content { align-items: center; padding-block: var(--sp-12); }
+    .page-hero__accent { margin-right: var(--sp-8); }
+  }
+</style>

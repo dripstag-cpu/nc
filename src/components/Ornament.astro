@@ -1,0 +1,27 @@
+---
+// Ornament from the mockups: a thin line, a small sprig with three leaves on a light curve, a line.
+// Above and below hero titles and under accent lines. Colour follows currentColor
+// (offwhite on photos, olive on light). Decorative only.
+interface Props {
+  class?: string;
+  /** width of the side lines in px */
+  line?: number;
+}
+const { class: cls, line = 56 } = Astro.props;
+---
+
+<span class:list={['ornament', cls]} aria-hidden="true">
+  <span class="ornament__line" style={`width:${line}px`}></span>
+  <svg width="30" height="14" viewBox="0 0 30 14" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+    <path d="M5.5 10.6c3.4-1.8 6.4-2.6 9.5-2.6s6.1.8 9.5 2.6" />
+    <path d="M15 8c-1.6-1.5-1.8-3.6-.2-6 1.8 2 1.9 4.3.2 6z" />
+    <path d="M10.4 8.8C8.2 8.6 6.6 7.2 6 4.8c2.4.1 4 1.6 4.4 4z" />
+    <path d="M19.6 8.8c2.2-.2 3.8-1.6 4.4-4-2.4.1-4 1.6-4.4 4z" />
+  </svg>
+  <span class="ornament__line" style={`width:${line}px`}></span>
+</span>
+
+<style>
+  .ornament { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--c-green-olive); }
+  .ornament__line { height: 1px; background: currentColor; opacity: 0.55; }
+</style>

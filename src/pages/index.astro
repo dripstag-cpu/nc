@@ -1,0 +1,247 @@
+---
+// Homepage: briefing chapter 7, ten sections in this order (decisions.md v2), copy from home.md.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import IconRow from '../components/IconRow.astro';
+import ImageCard from '../components/ImageCard.astro';
+import RichText from '../components/RichText.astro';
+import ReserveBlock from '../components/ReserveBlock.astro';
+import SplitFeature from '../components/SplitFeature.astro';
+import UspBand from '../components/UspBand.astro';
+import Faq from '../components/Faq.astro';
+import Placeholder from '../components/Placeholder.astro';
+import { Picture } from 'astro:assets';
+import { campground, website, faqPageFromCopy } from '../data/jsonld';
+import { img } from '../data/images';
+import { accommodationByName, site } from '../data/site';
+import { pageCopy } from '../lib/page-copy';
+import { field, section, toPlain } from '../lib/copy';
+import { labeled, need, paragraphs, lineStarting, withoutLines } from '../lib/sections';
+
+const copy = await pageCopy('home');
+const hero = need(section(copy, 'Hero'), 'Hero');
+const search = need(section(copy, 'Datumkiezer en korte intro'), 'Datumkiezer en korte intro');
+const values = need(section(copy, 'Vier kernwaarden'), 'Vier kernwaarden');
+const stays = need(section(copy, 'Verblijfsmogelijkheden'), 'Verblijfsmogelijkheden');
+const welcome = need(section(copy, 'Welkom bij Naescas'), 'Welkom bij Naescas');
+const rustpunt = need(section(copy, 'Het Rustpunt'), 'Het Rustpunt');
+const area = need(section(copy, 'Ontdek de omgeving'), 'Ontdek de omgeving');
+const trust = need(section(copy, 'Vertrouwen'), 'Vertrouwen');
+const practical = need(section(copy, 'Praktisch en veelgestelde vragen'), 'Praktisch en veelgestelde vragen');
+
+// Section 3: the three large cards from the briefing; the other two as text links
+const featured = ['Kampeerplaats met privé sanitair', 'Trekkershut', 'Glampingtent'];
+const stayImage: Record<string, typeof img.heroHutten> = {
+  'Kampeerplaats met privé sanitair': img.caravanSanitair,
+  Trekkershut: img.trekkershut,
+  Glampingtent: img.glampingtent,
+};
+const bigCards = featured.map((name) => {
+  const item = stays.items.find((i) => i.title === name)!;
+  return { item, acc: accommodationByName(name)! };
+});
+const otherStays = stays.items.filter((i) => !featured.includes(i.title)).map((i) => ({ item: i, acc: accommodationByName(i.title)! }));
+
+// Section 7: three image cards
+const areaImage: Record<string, typeof img.heroHutten> = {
+  'Water en natuur': img.sloep,
+  'Fietsen en wandelen': img.fietserKerk,
+  'Dagjes uit': img.dorp,
+};
+const areaAnchor: Record<string, string> = {
+  'Water en natuur': '/omgeving/#water-en-natuur',
+  'Fietsen en wandelen': '/omgeving/#fietsen-en-wandelen',
+  'Dagjes uit': '/omgeving/#dagjes-uit',
+};
+
+// Section 9: the practical lines from the copy
+const contactLine = lineStarting(practical.blocks, 'Contact:');
+const faq = practical.faq.slice(0, 4);
+
+// Search intro: first paragraph next to the form, the "vragen" line in the phone column
+const searchParas = paragraphs(search.blocks);
+---
+
+<BaseLayout
+  title={copy.meta.title}
+  description={copy.meta.description}
+  path="/"
+  jsonLd={[campground(), website(), faqPageFromCopy(faq)]}
+>
+  <!-- 1. Hero -->
+  <Hero
+    title={'Rustpunt in\nhet Groene Hart'}
+    sub={field(hero, 'onderregel')}
+    image={{ src: img.heroHutten.src, alt: hero.alts[0] ?? img.heroHutten.alt }}
+    mobileImage={img.heroHuttenMobiel}
+    primary={{ label: hero.buttons[0]?.label ?? 'Bekijk beschikbaarheid', href: '/beschikbaarheid/' }}
+    secondary={{ label: hero.buttons[1]?.label ?? 'Ontdek Naescas', href: '#verblijf' }}
+  />
+
+  <!-- 2. Vier kernwaarden -->
+  <section class="bg-paper home-values" aria-labelledby="values-title">
+    <div class="container reveal">
+      <h2 id="values-title" class="visually-hidden">{values.name}</h2>
+      <IconRow
+        accent={'Ruimte om\ntot rust te komen'}
+        watermark
+        items={values.items.map((v, i) => ({
+          icon: (['leaf', 'home', 'walk', 'bird'] as const)[i] ?? 'leaf',
+          title: v.title,
+          text: toPlain(v.blocks),
+        }))}
+      />
+    </div>
+  </section>
+
+  <!-- 3. Verblijfsmogelijkheden -->
+  <section class="bg-paper home-stays" id="verblijf" aria-labelledby="stays-title">
+    <div class="container reveal">
+      <div class="home-head home-head--row">
+        <h2 id="stays-title">{stays.name}</h2>
+        <RichText blocks={stays.blocks} class="home-head__lead" />
+      </div>
+      <ul role="list" class="home-cards">
+        {bigCards.map(({ item, acc }) => (
+          <li>
+            <ImageCard title={item.title} text={toPlain(item.blocks)} href={acc.href} image={stayImage[item.title]} alt={item.alts[0]} height={240} />
+          </li>
+        ))}
+      </ul>
+      <p class="home-more">
+        Ook mogelijk:{' '}
+        {otherStays.map(({ item, acc }, i) => (
+          <Fragment>{i > 0 && ' en '}<a href={acc.href}>{item.title.toLowerCase()}</a></Fragment>
+        ))}.{' '}
+        <a href="/verblijf/">Alle verblijven bekijken</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- 4. Welkom bij Naescas -->
+  <section class="section bg-offwhite" aria-labelledby="welcome-title">
+    <div class="container reveal">
+      <SplitFeature images={[img.naambord, img.mokken]}>
+        <p class="accent home-script-title" aria-hidden="true">{welcome.name}</p>
+        <h2 id="welcome-title" class="home-welcome-h2"><span class="visually-hidden">{welcome.name}: </span>Een kleine plek, zonder drukte</h2>
+        <RichText blocks={welcome.blocks} />
+        {welcome.buttons[0] && <a class="btn btn--secondary home-btn" href="/beschikbaarheid/">{welcome.buttons[0].label}</a>}
+      </SplitFeature>
+    </div>
+  </section>
+
+  <!-- 5. Beschikbaarheid en boeken -->
+  <section class="section bg-cream" aria-label="Beschikbaarheid en boeken">
+    <div class="container reveal">
+      <ReserveBlock title="Zoek een plek" intro={searchParas.slice(0, 1)} phoneText={searchParas.slice(1)} image={img.waterBrug} />
+    </div>
+  </section>
+
+  <!-- 6. Rustpunt en horeca: dark green band with photo and gradient (Onze visie band, ref-05) -->
+  <section class="home-rustpunt bg-dark" aria-labelledby="rustpunt-title">
+    <Picture class="home-rustpunt__img" src={img.kasGasten.src} alt={img.kasGasten.alt} formats={['avif', 'webp']} widths={[640, 1000, 1400]} sizes="(min-width: 900px) 60vw, 100vw" loading="lazy" decoding="async" />
+    <div class="home-rustpunt__shade" aria-hidden="true"></div>
+    <div class="container home-rustpunt__inner reveal">
+      <div class="home-rustpunt__text on-dark">
+        <p class="accent">Goed eten maakt het buitenleven nog mooier</p>
+        <h2 id="rustpunt-title">Rustpunt Naescas</h2>
+        <RichText blocks={rustpunt.blocks} />
+        <a class="btn btn--light home-btn" href="/horeca/">{rustpunt.buttons[0]?.label ?? 'Bekijk het Rustpunt'}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Ontdek de omgeving -->
+  <section class="section bg-sage" aria-labelledby="area-title">
+    <div class="container reveal">
+      <div class="home-head home-head--row">
+        <h2 id="area-title">{area.name}</h2>
+        <p class="home-more home-more--top"><a href="/omgeving/">{area.items[0]?.buttons[0]?.label ?? 'Bekijk de omgeving'}</a></p>
+      </div>
+      <ul role="list" class="home-cards">
+        {area.items.map((item) => (
+          <li>
+            <ImageCard title={item.title} text={toPlain(item.blocks)} href={areaAnchor[item.title] ?? '/omgeving/'} image={areaImage[item.title] ?? img.fietserKerk} height={240} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- 8. Reviews en vertrouwen: USP band until there are reviews -->
+  <UspBand
+    title={trust.name}
+    accent="Kleinschalig, persoonlijk en gastvrij"
+    sentence="Een bijzondere plek om tot rust te komen, op jouw tempo en in goed gezelschap."
+    items={[
+      { icon: 'heart', text: 'Persoonlijke benadering' },
+      { icon: 'pin', text: 'Midden in het Groene Hart' },
+      { icon: 'leafsprig', text: 'Natuur en ruimte om te ontspannen' },
+      { icon: 'bike', text: 'Ideaal voor fietsers en wandelaars' },
+    ]}
+    intro={paragraphs(trust.blocks)}
+    facts={trust.blocks.filter((b) => b.type === 'list')}
+  />
+
+  <!-- 9. Praktische informatie en veelgestelde vragen -->
+  <section class="section bg-offwhite" aria-labelledby="practical-title">
+    <div class="container reveal">
+      <div class="home-head">
+        <h2 id="practical-title">{practical.name}</h2>
+      </div>
+      <IconRow
+        level="h3"
+        items={[
+          { icon: 'pin', title: 'Locatie', text: `${site.address.street}, ${site.address.postalCode} ${site.address.city}` },
+          { icon: 'car', title: 'Bereikbaarheid', text: 'Route per auto, fiets en openbaar vervoer staat bij [contact](/contact/).' },
+          { icon: 'calendar', title: 'Openingsperiode', text: '[[NOG IN TE VULLEN: openingsperiode]]' },
+          { icon: 'phone', title: 'Contact', text: site.phone || site.email ? (contactLine ? labeled(contactLine).value : '') : '[[NOG IN TE VULLEN: telefoonnummer]] [[NOG IN TE VULLEN: e-mailadres]]' },
+        ]}
+      />
+      <RichText blocks={withoutLines(practical.blocks, ['Adres:', 'Contact:'])} />
+      <div class="home-faq">
+        <Faq items={faq} title="Veelgestelde vragen" id="home-faq" />
+        <p class="home-more"><a href="/veelgestelde-vragen/">Alle veelgestelde vragen</a></p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .home-values { padding-block: var(--sp-8) var(--sp-6); }
+  .home-stays { padding-block: var(--sp-6) var(--section-y); }
+  .home-head { display: grid; gap: var(--sp-3); margin-bottom: var(--sp-6); }
+  .home-head--row { align-items: end; }
+  .home-head :global(.home-head__lead) { font-size: var(--fs-base); max-width: 40ch; }
+  .home-cards { display: grid; gap: var(--sp-4); }
+  .home-more { margin-top: var(--sp-5); font-size: 0.9375rem; }
+  .home-more a { font-weight: 700; }
+  .home-more a + a, .home-more > a:last-child { margin-left: 0.25em; }
+  .home-more--top { margin: 0; }
+  .home-welcome-h2 { margin-bottom: var(--sp-4); font-size: clamp(1.875rem, 1vw + 1.5rem, 2.5rem); }
+  .home-script-title { margin-bottom: var(--sp-2); font-size: clamp(2.5rem, 1.6vw + 2rem, 3.25rem); color: var(--c-green-dark); transform: rotate(-2deg); transform-origin: left; }
+  .section :global(.home-ornament) { margin-top: var(--sp-6); }
+  .home-btn { margin-top: var(--sp-6); }
+  .home-ornament + .home-btn { margin-left: var(--sp-6); }
+
+  .home-rustpunt { position: relative; overflow: hidden; }
+  .home-rustpunt :global(picture) { position: absolute; inset: 0 0 0 auto; width: 100%; }
+  .home-rustpunt :global(.home-rustpunt__img) { width: 100%; height: 100%; object-fit: cover; }
+  .home-rustpunt__shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(34, 66, 43, 0.96) 30%, rgba(34, 66, 43, 0.75) 60%, rgba(34, 66, 43, 0.35) 100%); }
+  .home-rustpunt__inner { position: relative; padding-block: var(--sp-24) var(--section-y); }
+  .home-rustpunt__text { display: grid; justify-items: start; gap: var(--sp-3); max-width: 34rem; }
+  .home-rustpunt__text :global(p) { color: var(--c-cream); }
+  .home-rustpunt__text .accent { color: var(--c-offwhite); transform: rotate(-2deg); transform-origin: left; }
+  .home-rustpunt__text h2 { margin-bottom: var(--sp-2); }
+  .home-rustpunt .home-btn { margin-top: var(--sp-4); }
+
+  .home-faq { margin-top: var(--sp-12); }
+  @media (min-width: 900px) {
+    .home-head--row { grid-template-columns: auto 1fr; gap: var(--sp-10); }
+    .home-head--row > :global(:last-child) { justify-self: end; text-align: right; }
+    .home-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .home-rustpunt :global(picture) { width: 62%; }
+    .home-rustpunt__shade { background: linear-gradient(to right, var(--c-green-dark) 38%, rgba(34, 66, 43, 0.85) 48%, rgba(34, 66, 43, 0.25) 66%, rgba(34, 66, 43, 0) 82%); }
+    .home-rustpunt__inner { padding-block: var(--section-y); }
+  }
+</style>

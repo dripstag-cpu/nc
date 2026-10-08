@@ -1,0 +1,84 @@
+---
+// Row of thin line icons with a label and one short line, separated by thin vertical lines
+// (kernwaarden on the homepage, practical rows, Over ons values, Omgeving and Horeca icons).
+// Optional handwritten accent line on the right with a soft botanical watermark (ref-04).
+import Icon, { type IconName } from './Icon.astro';
+import RichText from './RichText.astro';
+import Ornament from './Ornament.astro';
+import Botanical from './Botanical.astro';
+import { parseInline, type Inline } from '../lib/copy';
+
+interface Item {
+  icon: IconName;
+  title: string;
+  /** markdown-ish string (placeholders, [links](/pad/)) or parsed inline copy */
+  text?: string | Inline[];
+}
+interface Props {
+  items: Item[];
+  accent?: string;
+  watermark?: boolean;
+  /** heading level for the item titles */
+  level?: 'h2' | 'h3';
+  /** label style: caps (kernwaarden) or plain two-line text (Over ons, Omgeving, Horeca) */
+  caps?: boolean;
+  class?: string;
+}
+const { items, accent, watermark = false, level = 'h3', caps = true, class: cls } = Astro.props;
+const Heading = level;
+---
+
+<div class:list={['icon-row', { 'icon-row--accent': accent, 'icon-row--plain': !caps }, cls]}>
+  {watermark && <Botanical class="icon-row__mark" variant="branch" width={250} />}
+  <ul role="list" class="icon-row__list" style={`--n:${items.length}`}>
+    {items.map((it) => (
+      <li class="icon-row__item">
+        <span class="icon-row__icon"><Icon name={it.icon} size={42} /></span>
+        <Heading class="icon-row__title">{it.title}</Heading>
+        {it.text && it.text.length > 0 && <p class="icon-row__text"><RichText inline={typeof it.text === 'string' ? parseInline(it.text) : it.text} /></p>}
+      </li>
+    ))}
+  </ul>
+  {accent && (
+    <p class="accent icon-row__accent">
+      <span class="icon-row__accent-text">{accent.split('\n').map((l, i) => <Fragment>{i > 0 && <br />}{l}</Fragment>)}</span>
+      <Ornament line={34} />
+    </p>
+  )}
+</div>
+
+<style>
+  .icon-row { position: relative; display: grid; gap: var(--sp-8); align-items: center; overflow-x: clip; }
+  .icon-row :global(.icon-row__mark) { position: absolute; right: -36px; top: 50%; translate: 0 -50%; opacity: 0.1; }
+  .icon-row__list { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-8) var(--sp-4); }
+  .icon-row__item { display: grid; justify-items: center; align-content: start; gap: var(--sp-2); text-align: center; padding-inline: var(--sp-3); }
+  .icon-row__icon { color: var(--c-green-dark); margin-bottom: var(--sp-1); }
+  .icon-row__title {
+    font-family: var(--font-body);
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    line-height: 1.35;
+    hyphens: auto;
+    overflow-wrap: break-word;
+    max-width: 100%;
+  }
+  .icon-row--plain .icon-row__title { font-size: 1.0625rem; font-weight: 400; letter-spacing: 0; text-transform: none; hyphens: manual; text-wrap: balance; }
+  .icon-row--plain .icon-row__text { margin-top: calc(-1 * var(--sp-2)); }
+  .icon-row__text { font-size: 0.875rem; line-height: 1.5; max-width: 23ch; }
+  .icon-row__accent { position: relative; display: grid; justify-items: center; gap: var(--sp-3); text-align: center; justify-self: center; }
+  .icon-row__accent-text { display: block; transform: rotate(-5deg); line-height: 1.2; }
+
+  @media (min-width: 900px) {
+    .icon-row__list { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 0; }
+    .icon-row__item + .icon-row__item { border-left: 1px solid rgba(34, 66, 43, 0.14); }
+    .icon-row--accent { grid-template-columns: 1fr 17rem; gap: 0; }
+    /* chips keep their words together, one chip per line */
+    .icon-row__text { max-width: 30ch; }
+    .icon-row__text :global(.placeholder) { display: inline-block; white-space: nowrap; margin: 2px 0; line-height: 1.6; }
+    .icon-row--accent .icon-row__list { border-right: 1px solid rgba(34, 66, 43, 0.14); }
+  }
+  .bg-dark .icon-row__icon { color: var(--c-cream); }
+  .bg-dark .icon-row__item + .icon-row__item { border-color: rgba(250, 247, 242, 0.2); }
+</style>

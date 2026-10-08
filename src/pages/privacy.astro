@@ -1,0 +1,9 @@
+---
+// /privacy/: concept text page (copy from privacy.md), rendered with CopyPage
+import CopyPage from '../components/CopyPage.astro';
+import { pageCopy } from '../lib/page-copy';
+
+const copy = await pageCopy('privacy');
+---
+
+<CopyPage copy={copy} />

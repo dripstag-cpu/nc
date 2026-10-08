@@ -1,0 +1,64 @@
+---
+// Mobile booking bar. Appears once the hero (or first screen) is scrolled past.
+// Not rendered on the booking pages (BaseLayout decides, see noStickyBarPaths).
+// Phone button: tel: link once site.phone is filled in; until then it links to /contact/.
+import Icon from './Icon.astro';
+import { bookingCta, site } from '../data/site';
+---
+
+<div class="sticky-bar" data-sticky-bar>
+  <a class="btn btn--primary sticky-bar__book" href={bookingCta.href}><Icon name="calendar" size={18} />{bookingCta.label}</a>
+  {site.phone ? (
+    <a class="btn btn--secondary sticky-bar__phone" href={site.phone.href}>
+      <Icon name="phone" size={22} />
+      <span class="visually-hidden">Bel {site.phone.display}</span>
+    </a>
+  ) : (
+    /* no confirmed phone number yet: same slot links to the contact page */
+    <a class="btn btn--secondary sticky-bar__phone" href="/contact/">
+      <Icon name="phone" size={22} />
+      <span class="visually-hidden">Contact</span>
+    </a>
+  )}
+</div>
+
+<style>
+  .sticky-bar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: var(--z-sticky);
+    display: flex;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--gutter) calc(var(--sp-2) + env(safe-area-inset-bottom));
+    background: var(--c-offwhite);
+    border-top: 1px solid var(--c-line);
+    transform: translateY(110%);
+    transition: transform var(--dur) var(--ease);
+  }
+  .sticky-bar.is-visible { transform: none; }
+  .sticky-bar__book { flex: 1; padding-inline: var(--sp-3); white-space: nowrap; }
+  .sticky-bar__phone { flex: none; width: var(--btn-h); padding: 0; background: var(--c-offwhite); }
+  @media (min-width: 900px) {
+    .sticky-bar { display: none; }
+  }
+</style>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-sticky-bar]');
+  if (bar) {
+    document.body.classList.add('has-sticky-bar');
+    const hero = document.querySelector('[data-hero]');
+    const show = (v: boolean) => {
+      bar.classList.toggle('is-visible', v);
+      bar.toggleAttribute('inert', !v);
+    };
+    show(false);
+    if (hero && 'IntersectionObserver' in window) {
+      new IntersectionObserver(([e]) => show(!e.isIntersecting)).observe(hero);
+    } else {
+      const onScroll = () => show(window.scrollY > window.innerHeight * 0.5);
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+    }
+  }
+</script>

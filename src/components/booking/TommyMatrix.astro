@@ -1,0 +1,39 @@
+---
+// Tommy availability/price matrix. With accommodationId it shows one accommodation
+// (ids in src/data/site.ts); without it, all five (for /tarieven/).
+// The script loads only when the block scrolls into view.
+// age-category-filter=1: a "Reisgezelschap" selector above the matrix; without it the price popover
+// says "Selecteer personen" and Boeken passes no persons to /reserveren/. Tommy does not read a
+// default from the URL, so a small script presets 2 adults by pressing + twice on the (hidden)
+// Volwassenen counter once the matrix has mounted. If Tommy's markup changes, nothing happens and the
+// visitor chooses persons in the selector. months-filter=1 adds a month choice; prices stay visible.
+// calendar-filter does nothing visible in account 7007, so it stays off.
+import TommyWidget from './TommyWidget.astro';
+
+interface Props {
+  accommodationId?: number;
+  id?: string;
+}
+const { accommodationId, id } = Astro.props;
+---
+
+<TommyWidget
+  widget="matrix"
+  minHeight={accommodationId ? '420px' : '640px'}
+  lazy
+  testPriceNote
+  id={id}
+  attrs={{
+    columns: 7,
+    'include-arrangements': 0,
+    'calendar-filter': 0,
+    'months-filter': 1,
+    'amenity-filter': 0,
+    'age-category-filter': 1,
+    'accommodation-group-filter': 0,
+    'last-minute': 0,
+    ...(accommodationId ? { 'accommodation-id': accommodationId } : {}),
+  }}
+/>
+
+<script is:inline set:html={`(function(){var el=document.querySelector('[data-tommy-widget="matrix"]');if(!el||!('MutationObserver' in window))return;var done=false;var mo=new MutationObserver(function(){if(done)return;var row=[].slice.call(el.querySelectorAll('.t3-counter')).find(function(c){return /Volwassenen/.test(c.textContent);});if(!row)return;done=true;mo.disconnect();var total=[].slice.call(el.querySelectorAll('.t3-counter')).reduce(function(n,c){var v=parseInt(c.textContent.replace(/\\D+/g,' ').trim().split(' ').pop(),10);return n+(isNaN(v)?0:v);},0);if(total>0)return;var btns=row.querySelectorAll('.counter-btn');var plus=btns[btns.length-1];if(plus){plus.click();plus.click();}});mo.observe(el,{childList:true,subtree:true});})();`} />

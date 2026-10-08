@@ -1,0 +1,32 @@
+---
+// Visible marker for missing facts: [[NOG IN TE VULLEN: tekst]] in the copy.
+// Shown on purpose in the demo so the owner sees what still has to be supplied.
+interface Props {
+  text: string;
+  /** lead-in, e.g. "Nog aan te leveren" for photos */
+  prefix?: string;
+}
+const { text, prefix = 'Nog in te vullen' } = Astro.props;
+---
+
+<mark class="placeholder" data-placeholder>{prefix}: {text}</mark>
+
+<style>
+  .placeholder {
+    display: inline;
+    padding: 0.1em 0.5em;
+    border: 1px dashed rgba(140, 107, 69, 0.55);
+    border-radius: 999px;
+    background: #f3eee6;
+    color: var(--c-brown-text);
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    font-style: normal;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.9;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+</style>

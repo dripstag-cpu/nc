@@ -1,0 +1,223 @@
+---
+// Accommodation detail page, briefing chapter 8 (decisions.md v2):
+// gallery, summary with facts, a Reserveren block tied to this accommodation (it opens
+// /beschikbaarheid/?verblijf=<id>, where Tommy shows only this accommodation with price and Boeken;
+// chosen over a direct link to /reserveren/, which shows an empty page for dates that are not
+// bookable), what is and is not
+// included, practical, short pointer to cancellation in the booking flow, FAQ, two related stays.
+// Copy from src/content/copy/<accommodation.copy>.md; sections not known here are rendered as text.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Gallery from './Gallery.astro';
+import RichText from './RichText.astro';
+import InOutList from './InOutList.astro';
+import Faq from './Faq.astro';
+import StayCard from './StayCard.astro';
+import Placeholder from './Placeholder.astro';
+import ReserveBlock from './ReserveBlock.astro';
+import Icon from './Icon.astro';
+import Ornament from './Ornament.astro';
+import { accommodation as accSchema, breadcrumbs, faqPageFromCopy } from '../data/jsonld';
+import { gallery, cardImage } from '../data/images';
+import { accommodationByName, type Accommodation } from '../data/site';
+import { pageCopy } from '../lib/page-copy';
+import { section, slugify, toPlain } from '../lib/copy';
+import { iconFor, labeled, lineStarting, listItems, need, paragraphs, titledLists, withoutLines } from '../lib/sections';
+
+interface Props {
+  acc: Accommodation;
+}
+const { acc } = Astro.props;
+
+const copy = await pageCopy(acc.copy);
+const tarieven = await pageCopy('tarieven');
+const known = ['galerij', 'titel-en-feiten', 'beschikbaarheid-en-prijs', 'wat-er-is-en-wat-er-niet-is', 'praktisch', 'veelgestelde-vragen', 'gerelateerde-verblijven', 'vaste-balk-op-mobiel'];
+
+const galerij = section(copy, 'Galerij');
+const summary = need(section(copy, 'Titel en feiten'), 'Titel en feiten');
+const avail = need(section(copy, 'Beschikbaarheid en prijs'), 'Beschikbaarheid en prijs');
+const inout = section(copy, 'Wat er is en wat er niet is');
+const practical = section(copy, 'Praktisch');
+const faq = section(copy, 'Veelgestelde vragen');
+const related = section(copy, 'Gerelateerde verblijven');
+const extra = copy.sections.filter((s) => !known.includes(s.id));
+
+const facts = listItems(summary.blocks).map(labeled);
+const priceLine = lineStarting(avail.blocks, 'Prijs:');
+const lists = inout ? titledLists(inout.blocks) : [];
+const cancel = section(tarieven, 'Annuleren');
+const relatedStays = (related?.items ?? [])
+  .map((i) => ({ item: i, acc: accommodationByName(i.title) }))
+  .filter((r): r is { item: typeof r.item; acc: Accommodation } => !!r.acc);
+
+const crumbs = [
+  { name: 'Home', path: '/' },
+  ...(acc.href.startsWith('/verblijf/') ? [{ name: 'Verblijf', path: '/verblijf/' }] : []),
+  { name: acc.name, path: acc.href },
+];
+---
+
+<BaseLayout
+  title={copy.meta.title}
+  description={copy.meta.description}
+  jsonLd={[breadcrumbs(crumbs), accSchema(acc, copy.meta.description), faq ? faqPageFromCopy(faq.faq) : null]}
+>
+  <section class="acc-top bg-offwhite">
+    <div class="container">
+      <nav class="crumbs" aria-label="Kruimelpad">
+        <ol role="list">
+          {crumbs.map((c, i) => (
+            <li>{i < crumbs.length - 1 ? <a href={c.path}>{c.name}</a> : <span aria-current="page">{c.name}</span>}</li>
+          ))}
+        </ol>
+      </nav>
+      <Gallery images={gallery[acc.slug]} wanted={galerij?.alts ?? []} />
+    </div>
+  </section>
+
+  <!-- ref-07: text with a fact grid, the Reserveren block, a light sage PRAKTISCHE INFO card -->
+  <section class="section bg-paper acc-main" aria-labelledby="page-title">
+    <div class="container acc-main__grid">
+      <div class="acc-intro">
+        <h1 id="page-title">{copy.meta.h1}</h1>
+        <Ornament class="acc-intro__ornament" />
+        <RichText blocks={paragraphs(summary.blocks)} class="acc-intro__lead" />
+        <dl class="acc-facts">
+          {facts.map((f) => (
+            <div class="acc-facts__item">
+              <dt><Icon name={iconFor(f.label)} size={28} class="acc-facts__icon" />{f.label || 'Feit'}</dt>
+              <dd><RichText inline={f.value} /></dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      <div class="acc-book" id="beschikbaarheid">
+        <h2 class="acc-label">Kies jouw data</h2>
+        <ReserveBlock compact title={`Reserveer deze ${acc.name.charAt(0).toLowerCase()}${acc.name.slice(1)}`} accommodationId={acc.tommyId}>
+          <RichText blocks={withoutLines(avail.blocks, ['Prijs:'])} class="date-search__note" />
+          {priceLine && <p class="date-search__note acc-price"><RichText inline={priceLine} /></p>}
+        </ReserveBlock>
+        {cancel && <RichText blocks={cancel.blocks.slice(0, 1)} class="acc-cancel" />}
+      </div>
+
+      {practical && (
+        <aside class="acc-info" aria-labelledby="practical-title">
+          <Icon name="leafsingle" size={30} class="acc-info__leaf" />
+          <h2 id="practical-title" class="acc-label">{practical.name === 'Praktisch' ? 'Praktische info' : practical.name}</h2>
+          <ul role="list" class="acc-info__list">
+            {listItems(practical.blocks).map(labeled).map((f) => (
+              <li>
+                <span class="acc-info__icon"><Icon name={iconFor(f.label)} size={24} /></span>
+                <div>
+                  <h3>{f.label || 'Praktisch'}</h3>
+                  <p><RichText inline={f.value} /></p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <Ornament line={30} class="acc-info__ornament" />
+        </aside>
+      )}
+    </div>
+  </section>
+
+  {lists.length === 2 && (
+    <section class="section bg-offwhite" aria-labelledby="inout-title">
+      <div class="container reveal">
+        <h2 id="inout-title" class="acc-h2">{inout!.name}</h2>
+        <InOutList yesTitle={lists[0].title} yes={lists[0].items} noTitle={lists[1].title} no={lists[1].items} />
+      </div>
+    </section>
+  )}
+
+  {extra.map((s) => (
+    <section class="section bg-offwhite acc-extra-section" aria-labelledby={`s-${s.id}`}>
+      <div class="container reveal acc-extra">
+        <h2 id={`s-${s.id}`} class="acc-h2">{s.name}</h2>
+        <RichText blocks={s.blocks} />
+      </div>
+    </section>
+  ))}
+
+  {faq && faq.faq.length > 0 && (
+    <section class="section bg-paper" aria-label={faq.name}>
+      <div class="container reveal">
+        <Faq items={faq.faq} title={faq.name} id="faq" />
+      </div>
+    </section>
+  )}
+
+  {relatedStays.length > 0 && (
+    <section class="section bg-offwhite" aria-labelledby="related-title">
+      <div class="container reveal">
+        <h2 id="related-title" class="acc-h2">{related!.name}</h2>
+        <ul role="list" class="acc-related">
+          {relatedStays.map(({ item, acc: r }) => (
+            <li>
+              <StayCard
+                title={r.name}
+                href={r.href}
+                image={cardImage[r.slug]}
+                icon={r.icon}
+                facts={[{ icon: 'person', text: `Tot ${r.maxPersons} personen` }, ...(r.sanitary ? [{ icon: 'shower' as const, text: r.sanitary }] : [])]}
+                blocks={item.blocks}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .acc-top { padding-top: var(--sp-5); padding-bottom: var(--sp-8); }
+  .crumbs ol { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-bottom: var(--sp-4); font-size: 0.875rem; }
+  .crumbs li + li::before { content: '/'; margin-right: var(--sp-2); color: var(--c-sage); }
+  .crumbs a { display: inline-flex; min-height: 32px; align-items: center; }
+
+  .acc-main__grid { display: grid; gap: var(--sp-10); align-items: start; }
+  .acc-intro h1 { font-size: clamp(2.5rem, 1.6vw + 2rem, 3.25rem); font-weight: 500; line-height: 1.05; }
+  .acc-intro :global(.acc-intro__ornament) { margin-top: var(--sp-3); }
+  .acc-intro :global(.acc-intro__lead) { margin-top: var(--sp-4); }
+  .acc-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: var(--sp-8); border-top: 1px dashed rgba(34, 66, 43, 0.25); }
+  .acc-facts__item { padding: var(--sp-4) var(--sp-3) var(--sp-4) 0; border-bottom: 1px dashed rgba(34, 66, 43, 0.25); }
+  .acc-facts__item:nth-child(odd) { border-right: 1px dashed rgba(34, 66, 43, 0.25); }
+  .acc-facts__item:nth-child(even) { padding-left: var(--sp-4); }
+  .acc-facts dt { display: flex; align-items: center; gap: var(--sp-3); font-size: 0.9375rem; font-weight: 700; line-height: 1.3; }
+  .acc-facts :global(.acc-facts__icon) { flex: none; color: var(--c-green-olive); }
+  .acc-facts dd { margin: var(--sp-1) 0 0 calc(28px + var(--sp-3)); font-size: 0.875rem; line-height: 1.5; }
+
+  .acc-label { margin-bottom: var(--sp-4); font-family: var(--font-body); font-size: var(--fs-xs); font-weight: 700; letter-spacing: var(--tracking-caps); text-transform: uppercase; text-align: center; }
+  .acc-price { font-size: 1rem; }
+  .acc-book :global(.acc-cancel) { margin-top: var(--sp-4); font-size: 0.875rem; }
+
+  .acc-info { display: grid; justify-items: center; padding: var(--sp-8) var(--sp-6); background: var(--c-sage-light); background: color-mix(in srgb, var(--c-sage-light) 55%, var(--c-paper)); border-radius: var(--radius-card); }
+  .acc-info :global(.acc-info__leaf) { color: var(--c-green-olive); margin-bottom: var(--sp-3); }
+  .acc-info__list { display: grid; gap: var(--sp-5); width: 100%; }
+  .acc-info__list li { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-4); align-items: start; }
+  .acc-info__icon { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid rgba(34, 66, 43, 0.35); border-radius: 50%; color: var(--c-green-dark); }
+  .acc-info h3 { font-family: var(--font-body); font-size: 0.9375rem; font-weight: 700; line-height: 1.3; }
+  .acc-info p { font-size: 0.875rem; line-height: 1.45; }
+  .acc-info :global(.acc-info__ornament) { margin-top: var(--sp-6); padding-top: var(--sp-5); border-top: 1px solid rgba(34, 66, 43, 0.15); width: 100%; justify-content: center; }
+
+  .acc-h2 { margin-bottom: var(--sp-8); }
+  .acc-extra { max-width: 52rem; }
+  .acc-related { display: grid; gap: var(--sp-6); }
+  .acc-related > li { display: flex; }
+  .acc-related > li > :global(*) { flex: 1; }
+  @media (min-width: 800px) {
+    .acc-related { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 60rem; }
+  }
+  @media (min-width: 900px) {
+    .acc-main__grid { grid-template-columns: 1.2fr 1fr; gap: var(--sp-10); }
+    .acc-info { grid-column: 1 / -1; }
+    .acc-info__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1240px) {
+    .acc-main__grid { grid-template-columns: 1.25fr 1fr 0.8fr; gap: var(--sp-8); }
+    .acc-intro { padding-right: var(--sp-6); border-right: 1px solid rgba(34, 66, 43, 0.12); }
+    .acc-info { grid-column: auto; }
+    .acc-info__list { grid-template-columns: 1fr; }
+  }
+</style>

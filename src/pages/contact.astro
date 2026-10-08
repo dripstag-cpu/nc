@@ -1,0 +1,129 @@
+---
+// /contact/: two columns after the contact mockup: address, phone, e-mail, hours and the form on
+// the left; map block and routes on the right. No external map embed in the demo.
+// Copy from contact.md.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import RichText from '../components/RichText.astro';
+import ContactForm from '../components/ContactForm.astro';
+import Icon from '../components/Icon.astro';
+import Figure from '../components/Figure.astro';
+import { img } from '../data/images';
+import { breadcrumbs } from '../data/jsonld';
+import { site } from '../data/site';
+import { pageCopy } from '../lib/page-copy';
+import { section } from '../lib/copy';
+import { need } from '../lib/sections';
+import type { IconName } from '../components/icon-names';
+
+const copy = await pageCopy('contact');
+const intro = section(copy, 'Intro');
+const address = need(section(copy, 'Adres en bereikbaarheid'), 'Adres en bereikbaarheid');
+const route = need(section(copy, 'Route'), 'Route');
+const form = need(section(copy, 'Stuur een bericht'), 'Stuur een bericht');
+const book = section(copy, 'Wil je direct boeken');
+const routeIcons: IconName[] = ['car', 'camper', 'bike', 'bus'];
+// The field list in the copy (Naam, E-mail, Bericht) is the form itself; the rest is text.
+const formText = form.blocks.filter((b) => b.type === 'paragraph');
+---
+
+<BaseLayout
+  title={copy.meta.title}
+  description={copy.meta.description}
+  jsonLd={breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Contact', path: copy.meta.slug }])}
+>
+  <PageHeader title={copy.meta.h1}>
+    {intro && <RichText blocks={intro.blocks} />}
+  </PageHeader>
+
+  <section class="section bg-offwhite">
+    <div class="container contact-grid">
+      <div class="contact-col">
+        <h2>{address.name}</h2>
+        <div class="contact-address"><Icon name="pin" size={24} /><RichText blocks={address.blocks} /></div>
+
+        <h2 id="bericht" class="contact-form-title">{form.name}</h2>
+        <RichText blocks={formText.slice(0, 1)} />
+        <ContactForm button={form.buttons[0]?.label} />
+        <!-- copy line "Lees in de privacyverklaring hoe we met je gegevens omgaan." with the word as a link -->
+        <p class="contact-privacy">Lees in de <a href="/privacy/">privacyverklaring</a> hoe we met je gegevens omgaan.</p>
+      </div>
+
+      <div class="contact-col" id="route">
+        <div class="contact-map" role="img" aria-label={`Kaartblok: ${site.name}, ${site.address.street}, ${site.address.postalCode} ${site.address.city}`}>
+          <svg class="contact-map__lines" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice" fill="none" aria-hidden="true">
+            <rect width="400" height="250" fill="#EDE8DC" />
+            <path d="M0 40h400M0 92h400M0 150h400M0 205h400M60 0v250M128 0v250M196 0v250M262 0v250M330 0v250" stroke="#B6C2AF" stroke-width=".8" opacity=".55" />
+            <path d="M-10 196C60 186 110 150 170 140s110 4 160-14 70-40 90-46" stroke="#B6C2AF" stroke-width="14" stroke-linecap="round" />
+            <path d="M-10 196C60 186 110 150 170 140s110 4 160-14 70-40 90-46" stroke="#7D9771" stroke-width=".8" stroke-dasharray="3 5" opacity=".7" />
+            <path d="M-10 172C70 164 120 128 176 120s108 2 156-14 66-34 78-40" stroke="#FAF7F2" stroke-width="7" stroke-linecap="round" />
+            <path d="M236 -10c-6 60 2 120-10 270M96 -10c10 80-6 150 4 270" stroke="#FAF7F2" stroke-width="5" />
+            <path d="M0 60c80 6 160-4 240 6s120-2 170 4" stroke="#FAF7F2" stroke-width="3.5" />
+            <circle cx="314" cy="40" r="12" fill="#B6C2AF" opacity=".8" />
+            <circle cx="40" cy="232" r="16" fill="#B6C2AF" opacity=".6" />
+          </svg>
+          <span class="contact-map__pin"><svg width="38" height="48" viewBox="0 0 38 48" aria-hidden="true"><path d="M19 47s17-15.6 17-28A17 17 0 0 0 2 19c0 12.4 17 28 17 28z" fill="#22422B" /><circle cx="19" cy="19" r="6.5" fill="#FAF7F2" /></svg></span>
+          <span class="contact-map__label">NAESCAS<br /><small>{site.address.street}</small></span>
+        </div>
+        <Figure image={img.laan.src} alt={img.laan.alt} ratio="16 / 9" widths={[480, 800, 1000]} sizes="(min-width: 960px) 560px, 100vw" />
+        <h2>{route.name}</h2>
+        <ul role="list" class="contact-routes">
+          {route.items.map((it, i) => (
+            <li>
+              <span class="contact-routes__icon"><Icon name={routeIcons[i] ?? 'route'} size={26} /></span>
+              <div>
+                <h3>{it.title}</h3>
+                <RichText blocks={it.blocks} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  {book && (
+    <section class="section bg-dark" aria-labelledby="book-title">
+      <div class="container contact-book">
+        <div>
+          <h2 id="book-title">{book.name}</h2>
+          <RichText blocks={book.blocks} />
+        </div>
+        <a class="btn btn--light" href="/beschikbaarheid/">{book.buttons[0]?.label ?? 'Bekijk beschikbaarheid'}</a>
+      </div>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .contact-grid { display: grid; gap: var(--sp-12); }
+  .contact-col { display: grid; gap: var(--sp-5); align-content: start; }
+  .contact-col h2 { font-size: clamp(1.75rem, 1.5vw + 1.3rem, 2.5rem); }
+  .contact-address { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-3); color: var(--c-green-dark); }
+  .contact-address :global(svg) { color: var(--c-green-olive); margin-top: 4px; }
+  .contact-form-title { margin-top: var(--sp-6); scroll-margin-top: calc(var(--header-h) + 1rem); }
+  .contact-privacy { font-size: 0.9375rem; }
+  .contact-map {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: var(--radius-card);
+    background: var(--c-cream);
+    border: var(--border-card);
+  }
+  .contact-map__lines { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .contact-map__pin { position: relative; translate: 0 -22px; filter: drop-shadow(0 3px 4px rgba(20, 40, 26, 0.3)); }
+  .contact-map__label { position: absolute; left: calc(50% + 28px); top: calc(50% - 46px); padding: 4px 8px; background: rgba(250, 247, 242, 0.85); border-radius: 4px; font-family: var(--font-display); font-weight: 500; font-size: 1.25rem; letter-spacing: 0.08em; line-height: 1.1; color: var(--c-green-dark); }
+  .contact-map__label small { font-family: var(--font-body); font-size: 0.75rem; font-weight: 400; }
+  .contact-routes { display: grid; gap: var(--sp-6); }
+  .contact-routes li { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-4); }
+  .contact-routes__icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--c-cream); color: var(--c-green-dark); }
+  .contact-routes h3 { font-family: var(--font-body); font-size: 1rem; font-weight: 700; letter-spacing: var(--tracking-caps); text-transform: uppercase; margin-bottom: var(--sp-1); }
+  .contact-book { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-6); }
+  .contact-book > div { display: grid; gap: var(--sp-3); }
+  @media (min-width: 960px) {
+    .contact-grid { grid-template-columns: 1fr 1fr; gap: var(--sp-16); }
+  }
+</style>

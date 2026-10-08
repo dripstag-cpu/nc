@@ -1,0 +1,38 @@
+---
+// /beschikbaarheid/: Tommy search page (noindex, not in the sitemap). Copy from beschikbaarheid.md.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import RichText from '../components/RichText.astro';
+import TommySearchPage from '../components/booking/TommySearchPage.astro';
+import ReserveBlock from '../components/ReserveBlock.astro';
+import { img } from '../data/images';
+import { breadcrumbs } from '../data/jsonld';
+import { pageCopy } from '../lib/page-copy';
+import { section } from '../lib/copy';
+
+const copy = await pageCopy('beschikbaarheid');
+const intro = section(copy, 'Intro');
+---
+
+<BaseLayout
+  title={copy.meta.title}
+  description={copy.meta.description}
+  noindex
+  jsonLd={breadcrumbs([{ name: 'Home', path: '/' }, { name: copy.meta.h1, path: copy.meta.slug }])}
+>
+  <PageHeader title={copy.meta.h1}>
+    {intro && <RichText blocks={intro.blocks} />}
+  </PageHeader>
+  <section class="section bg-offwhite booking">
+    <div class="container">
+      <ReserveBlock title="Reserveren" image={img.waterBrug} />
+      <h2 class="visually-hidden">Zoek en boek</h2>
+      <div class="booking__widget"><TommySearchPage /></div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .booking { padding-top: var(--sp-10); }
+  .booking__widget { margin-top: var(--sp-10); scroll-margin-top: calc(var(--header-h) + 1rem); }
+</style>

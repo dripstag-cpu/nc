@@ -1,0 +1,172 @@
+---
+// Own lightweight date search (no Tommy code). Plain GET form to /beschikbaarheid/.
+// With JS: on submit the fields become the parameters the Tommy search page reads:
+//   arrival-date, departure-date, age-category=[{"id":39767,"pax":N},{"id":39764,"pax":M}]
+// Without JS: the fields go along as plain parameters (arrival-date, departure-date,
+// volwassenen, kinderen) and TommySearchPage converts them before the widget loads.
+import { AGE_CATEGORY, RESULT_PAGE_PATH } from '../data/tommy';
+import Icon from './Icon.astro';
+
+interface Props {
+  title?: string;
+  /** Tommy accommodation id: results on /beschikbaarheid/ show only this accommodation */
+  accommodationId?: number;
+}
+const { title = 'Zoek een plek', accommodationId } = Astro.props;
+const uid = title.toLowerCase().replace(/[^a-z]+/g, '-');
+---
+
+<form
+  class="date-search"
+  method="get"
+  action={RESULT_PAGE_PATH}
+  data-date-search
+  data-adults-id={AGE_CATEGORY.adults}
+  data-children-id={AGE_CATEGORY.children}
+  aria-labelledby={`ds-title-${uid}`}
+>
+  <h2 id={`ds-title-${uid}`} class="date-search__title"><Icon name="calendar" size={30} class="date-search__icon" />{title}</h2>
+  <slot />
+  <input type="hidden" name="verblijf" value={accommodationId ?? ''} data-verblijf />
+  <div class="date-search__fields">
+    <div class="field">
+      <label for={`ds-arrival-${uid}`}>Aankomst</label>
+      <input id={`ds-arrival-${uid}`} name="arrival-date" type="date" autocomplete="off" required />
+    </div>
+    <div class="field">
+      <label for={`ds-departure-${uid}`}>Vertrek</label>
+      <input id={`ds-departure-${uid}`} name="departure-date" type="date" autocomplete="off" required />
+    </div>
+    <div class="field">
+      <label for={`ds-adults-${uid}`}>Volwassenen</label>
+      <input id={`ds-adults-${uid}`} name="volwassenen" type="number" inputmode="numeric" min="1" max="6" value="2" autocomplete="off" required />
+    </div>
+    <div class="field">
+      <label for={`ds-children-${uid}`}>Kinderen <span class="field__hint">2 tot 15 jaar</span></label>
+      <input id={`ds-children-${uid}`} name="kinderen" type="number" inputmode="numeric" min="0" max="5" value="0" autocomplete="off" />
+    </div>
+    <button class="btn btn--primary date-search__submit" type="submit">Zoeken</button>
+  </div>
+</form>
+
+<style>
+  .date-search {
+    position: relative;
+    z-index: 2;
+    padding: var(--sp-6) var(--sp-5);
+    background: var(--c-offwhite);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius-card);
+    box-shadow: 0 10px 30px rgba(34, 66, 43, 0.1);
+  }
+  .date-search__title {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-4);
+    font-size: clamp(1.5rem, 0.6vw + 1.3rem, 1.875rem);
+    line-height: 1.15;
+  }
+  .date-search :global(.date-search__icon) { flex: none; color: var(--c-green-olive); }
+  .date-search :global(.date-search__note) { margin: calc(-1 * var(--sp-2)) 0 var(--sp-4); font-size: 1rem; }
+  .date-search__fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--sp-4) var(--sp-3);
+    align-items: end;
+  }
+  .field { display: grid; gap: var(--sp-1); min-width: 0; }
+  .field label { font-size: var(--fs-xs); font-weight: 700; letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+  .field__hint { display: block; font-weight: 400; font-size: 0.75rem; letter-spacing: 0; text-transform: none; }
+  .field input {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--btn-h);
+    padding: 0 var(--sp-3);
+    border: 1px solid rgba(85, 109, 61, 0.65);
+    border-radius: var(--radius-btn);
+    background: var(--c-offwhite);
+    color: var(--c-green-dark);
+  }
+  .field input:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+  .date-search__submit { grid-column: 1 / -1; width: 100%; }
+  /* phones: dates get a full row so the year stays visible */
+  @media (max-width: 479px) {
+    .field:has(input[type='date']) { grid-column: 1 / -1; }
+  }
+
+  @media (min-width: 900px) {
+    .date-search { padding: var(--sp-6) var(--sp-8) var(--sp-8); }
+    .date-search__fields { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: var(--sp-4); }
+    .date-search__submit { grid-column: auto; min-width: 9rem; }
+    .field__hint { display: inline; margin-left: 0.25em; }
+  }
+</style>
+
+<script>
+  const NIGHTS = 2;
+  const iso = (d: Date) => {
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  };
+  const addDays = (s: string, n: number) => {
+    const [y, m, d] = s.split('-').map(Number);
+    return iso(new Date(y, m - 1, d + n));
+  };
+
+  document.querySelectorAll<HTMLFormElement>('[data-date-search]').forEach((form) => {
+    const arrival = form.querySelector<HTMLInputElement>('[name="arrival-date"]')!;
+    const departure = form.querySelector<HTMLInputElement>('[name="departure-date"]')!;
+    const adults = form.querySelector<HTMLInputElement>('[name="volwassenen"]')!;
+    const children = form.querySelector<HTMLInputElement>('[name="kinderen"]')!;
+    const stay = form.querySelector<HTMLInputElement>('[data-verblijf]')!;
+
+    // Prefill from the URL (/beschikbaarheid/?arrival-date=...&departure-date=...&age-category=[...]),
+    // also from the plain no-JS parameters volwassenen and kinderen.
+    const q = new URLSearchParams(location.search);
+    const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+    if (isoDate.test(q.get('arrival-date') ?? '')) arrival.value = q.get('arrival-date')!;
+    if (isoDate.test(q.get('departure-date') ?? '')) departure.value = q.get('departure-date')!;
+    try {
+      const ages: { id: number; pax: number }[] = JSON.parse(q.get('age-category') ?? '[]');
+      const pax = (id: number) => ages.find((a) => a.id === id)?.pax;
+      const a = pax(Number(form.dataset.adultsId));
+      const c = pax(Number(form.dataset.childrenId));
+      if (a) adults.value = String(a);
+      if (c !== undefined) children.value = String(c);
+    } catch {
+      /* malformed age-category: keep the defaults */
+    }
+    if (q.get('volwassenen')) adults.value = q.get('volwassenen')!;
+    // on /beschikbaarheid/ a new search keeps the accommodation filter from the URL
+    if (!stay.value && /^\d+$/.test(q.get('verblijf') ?? '')) stay.value = q.get('verblijf')!;
+    if (q.get('kinderen')) children.value = q.get('kinderen')!;
+
+    const today = iso(new Date());
+    arrival.min = today;
+    if (!arrival.value) arrival.value = today;
+    departure.min = addDays(arrival.value, 1);
+    if (!departure.value) departure.value = addDays(arrival.value, NIGHTS);
+
+    arrival.addEventListener('change', () => {
+      if (!arrival.value) return;
+      departure.min = addDays(arrival.value, 1);
+      if (!departure.value || departure.value <= arrival.value) departure.value = addDays(arrival.value, NIGHTS);
+    });
+
+    form.addEventListener('submit', (e) => {
+      if (!form.reportValidity()) return;
+      e.preventDefault();
+      const ageCategory = [{ id: Number(form.dataset.adultsId), pax: Math.max(1, Number(adults.value) || 1) }];
+      const kids = Number(children.value) || 0;
+      if (kids > 0) ageCategory.push({ id: Number(form.dataset.childrenId), pax: kids });
+      const params = new URLSearchParams({
+        'arrival-date': arrival.value,
+        'departure-date': departure.value,
+        'age-category': JSON.stringify(ageCategory),
+      });
+      if (stay.value) params.set('verblijf', stay.value);
+      window.location.assign(`${form.action}?${params}`);
+    });
+  });
+</script>

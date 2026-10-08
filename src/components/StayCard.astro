@@ -1,0 +1,100 @@
+---
+// Accommodation card from the Verblijf mockup (p09, ref-06): cream card with a thin border, 4:3 photo
+// with a round badge (pictogram from the entrance sign) top left, Cormorant title, small fact icons in
+// two columns, two lines of text, "vanaf ... per nacht" and an outlined BEKIJK & BOEK over the full width.
+import { Picture } from 'astro:assets';
+import Icon, { type IconName } from './Icon.astro';
+import Pictogram from './Pictogram.astro';
+import RichText from './RichText.astro';
+import Placeholder from './Placeholder.astro';
+import type { Block } from '../lib/copy';
+import type { Img } from '../data/images';
+import type { PictogramName } from './icon-names';
+
+interface Fact {
+  icon: IconName;
+  text: string;
+}
+interface Props {
+  title: string;
+  href: string;
+  image: Img;
+  alt?: string;
+  icon: PictogramName;
+  facts: Fact[];
+  blocks?: Block[];
+  level?: 'h2' | 'h3';
+  /** show the "vanaf ... per nacht" line (prices still unknown, so a chip) */
+  price?: boolean;
+}
+const { title, href, image, alt, icon, facts, blocks = [], level = 'h3', price = true } = Astro.props;
+const Heading = level;
+---
+
+<article class="stay-card">
+  <div class="stay-card__media">
+    <Picture
+      src={image.src}
+      alt={alt ?? image.alt}
+      formats={['avif', 'webp']}
+      widths={[400, 800].filter((w) => w <= image.src.width)}
+      sizes="(min-width: 1000px) 440px, (min-width: 700px) 50vw, 100vw"
+      loading="lazy"
+      decoding="async"
+    />
+    <span class="stay-card__badge" aria-hidden="true"><Pictogram name={icon} size={32} /></span>
+  </div>
+  <div class="stay-card__body">
+    <Heading class="stay-card__title"><a href={href}>{title}</a></Heading>
+    <ul role="list" class="stay-card__facts">
+      {facts.map((f) => <li><Icon name={f.icon} size={20} /><span>{f.text}</span></li>)}
+    </ul>
+    {blocks.length > 0 && <RichText blocks={blocks} class="stay-card__text" />}
+    {price && (
+      <p class="stay-card__price"><span class="stay-card__from">vanaf</span> <Placeholder text="prijs" /> <span class="stay-card__per">per nacht</span></p>
+    )}
+    <a class="btn btn--secondary stay-card__btn" href={href}>Bekijk &amp; boek<span class="visually-hidden">: {title}</span></a>
+  </div>
+</article>
+
+<style>
+  .stay-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--c-paper);
+    border: var(--border-card);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+  .stay-card__media { position: relative; aspect-ratio: 3 / 2; }
+  .stay-card__media :global(picture) { display: block; height: 100%; overflow: hidden; }
+  .stay-card__media :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform 500ms var(--ease); }
+  .stay-card:hover .stay-card__media :global(img) { transform: scale(1.03); }
+  .stay-card__badge {
+    position: absolute;
+    left: var(--sp-4);
+    top: var(--sp-4);
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border: 2px solid var(--c-offwhite);
+    border-radius: 50%;
+    background: var(--c-green-dark);
+    color: var(--c-offwhite);
+    box-shadow: 0 2px 8px rgba(10, 24, 14, 0.25);
+  }
+  .stay-card__body { display: flex; flex-direction: column; gap: var(--sp-3); flex: 1; padding: var(--sp-5) var(--sp-5) var(--sp-5); }
+  .stay-card__title { font-size: var(--fs-h3); font-weight: 500; line-height: 1.15; }
+  .stay-card__title a { text-decoration: none; }
+  .stay-card__title a:hover { text-decoration: underline; text-decoration-thickness: 1px; }
+  .stay-card__facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2) var(--sp-3); font-size: 0.8125rem; line-height: 1.35; }
+  .stay-card__facts li { display: flex; align-items: center; gap: var(--sp-2); color: var(--c-green-dark); }
+  .stay-card__facts :global(svg) { flex: none; color: var(--c-green-olive); }
+  .stay-card :global(.stay-card__text) { font-size: 0.9375rem; line-height: 1.55; }
+  .stay-card__price { margin-top: auto; padding-top: var(--sp-2); font-size: 0.8125rem; }
+  .stay-card__from, .stay-card__per { color: var(--c-green-dark); }
+  .stay-card__btn { width: 100%; }
+</style>

@@ -1,0 +1,110 @@
+---
+// /omgeving/: hub after the Omgeving mockup (page 8). Copy from omgeving.md.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import ImageCard from '../components/ImageCard.astro';
+import IconRow from '../components/IconRow.astro';
+import RichText from '../components/RichText.astro';
+import QuoteBand from '../components/QuoteBand.astro';
+import Ornament from '../components/Ornament.astro';
+import { breadcrumbs } from '../data/jsonld';
+import { img } from '../data/images';
+import { pageCopy } from '../lib/page-copy';
+import { section } from '../lib/copy';
+import { need } from '../lib/sections';
+import { linkFor } from '../lib/links';
+
+const copy = await pageCopy('omgeving');
+const intro = need(section(copy, 'Intro'), 'Intro');
+const plan = section(copy, 'Plan je verblijf');
+const body = copy.sections.filter((s) => s !== intro && s !== plan);
+
+const cards = [
+  { title: 'Fietsroutes', href: '#fietsen-en-wandelen', image: img.fietsers },
+  { title: 'Wandelroutes', href: '#fietsen-en-wandelen', image: img.wandelaars },
+  { title: 'Varen en waterplezier', href: '#water-en-natuur', image: img.sloep },
+  { title: 'Gezellige dorpen en steden', href: '#dagjes-uit', image: img.dorp },
+];
+const bg = ['bg-offwhite', 'bg-paper'];
+
+---
+
+<BaseLayout
+  title={copy.meta.title}
+  description={copy.meta.description}
+  jsonLd={breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Omgeving', path: copy.meta.slug }])}
+>
+  <PageHero title={copy.meta.h1} sub="Fietsen, wandelen, varen en genieten in het Groene Hart." image={img.kerkBootje} split />
+
+  <section class="section bg-offwhite" aria-labelledby="intro-title">
+    <div class="container reveal">
+      <div class="omg-intro">
+        <div>
+          <h2 id="intro-title" class="visually-hidden">Over de omgeving</h2>
+          <RichText blocks={intro.blocks} class="lead" />
+        </div>
+        <p class="accent omg-intro__accent"><span>Natuur, cultuur<br />en gezelligheid dichtbij</span><Ornament line={30} /></p>
+      </div>
+      <ul role="list" class="omg-cards">
+        {cards.map((c) => <li><ImageCard title={c.title} href={c.href} image={c.image} ratio="2.4 / 1" /></li>)}
+      </ul>
+      <IconRow
+        class="omg-icons"
+        caps={false}
+        items={[
+          { icon: 'bike', title: 'Fietsverhuur', text: '[[NOG IN TE VULLEN: fietsverhuur bij de camping]]' },
+          { icon: 'pin', title: 'Uitgestippelde routes', text: 'Fiets- en wandelknooppunten in de buurt' },
+          { icon: 'camera', title: 'Mooiste fotoplekken', text: 'Molens, plassen en polders' },
+          { icon: 'tree', title: 'Natuurgebieden en plassen', text: 'Nieuwkoopse en Langeraarse Plassen' },
+        ]}
+      />
+    </div>
+  </section>
+
+  {body.map((s, i) => (
+    <section class:list={['section', bg[(i + 1) % 2]]} id={s.id} aria-labelledby={`s-${s.id}`}>
+      <div class="container reveal">
+        <div class="omg-section">
+          <h2 id={`s-${s.id}`}>{s.name}</h2>
+          <RichText blocks={s.blocks} />
+          {s.items.map((it) => (
+            <div class="omg-item">
+              <h3>{it.title}</h3>
+              <RichText blocks={it.blocks} />
+            </div>
+          ))}
+          {[...s.buttons, ...s.items.flatMap((it) => it.buttons)].map((b) => linkFor(b.label) && <a class="btn btn--secondary omg-btn" href={linkFor(b.label)}>{b.label}</a>)}
+        </div>
+      </div>
+    </section>
+  ))}
+
+  <QuoteBand image={img.zonsondergang} quote="Altijd iets te ontdekken, altijd een reden om terug te komen." />
+
+  <section class="section bg-cream" aria-labelledby="plan-title">
+    <div class="container omg-plan reveal">
+      <h2 id="plan-title">{plan?.name ?? 'Plan je verblijf'}</h2>
+      <a class="btn btn--primary" href="/beschikbaarheid/">{plan?.buttons[0]?.label ?? 'Bekijk beschikbaarheid'}</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .omg-intro { display: grid; gap: var(--sp-6); align-items: center; margin-bottom: var(--sp-10); }
+  .omg-intro__accent { display: grid; justify-items: center; gap: var(--sp-3); text-align: center; }
+  .omg-intro__accent > span { transform: rotate(-5deg); line-height: 1.2; }
+  .omg-cards { display: grid; gap: var(--sp-4); margin-bottom: var(--sp-10); }
+  .omg-section { display: grid; gap: var(--sp-4); max-width: 46rem; justify-items: start; }
+  .omg-section :global(ul) { padding-left: 1.1em; }
+  .omg-section :global(li::marker) { color: var(--c-green-olive); }
+  .omg-item { display: grid; gap: var(--sp-2); margin-top: var(--sp-4); }
+  .omg-item h3 { font-size: var(--fs-h4); }
+  .omg-btn { margin-top: var(--sp-4); }
+  .omg-plan { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-4); }
+  @media (min-width: 700px) {
+    .omg-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 900px) {
+    .omg-intro { grid-template-columns: 2fr 1fr; }
+  }
+</style>

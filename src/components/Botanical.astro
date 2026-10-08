@@ -1,0 +1,31 @@
+---
+// Botanical drawings from the mockups (decisions.md v3): a meadow of grasses, flower spikes and
+// umbels for the footer corners (ref-04, ref-05), and a leafy branch as a soft watermark (the
+// kernwaarden row in ref-04). Sage silhouettes in public/decor/, loaded once and cached; decorative.
+interface Props {
+  class?: string;
+  variant?: 'meadow' | 'branch';
+  /** mirror horizontally (left-hand corner) */
+  flip?: boolean;
+  width?: number;
+}
+const { class: cls, variant = 'meadow', flip = false, width = 240 } = Astro.props;
+const file = variant === 'meadow' ? '/decor/weide.svg' : '/decor/tak.svg';
+const height = Math.round(width * (variant === 'meadow' ? 200 / 280 : 240 / 200));
+---
+
+<img
+  class:list={['botanical', cls]}
+  src={file}
+  width={width}
+  height={height}
+  alt=""
+  aria-hidden="true"
+  loading="lazy"
+  decoding="async"
+  style={flip ? 'transform:scaleX(-1)' : undefined}
+/>
+
+<style>
+  .botanical { pointer-events: none; user-select: none; }
+</style>

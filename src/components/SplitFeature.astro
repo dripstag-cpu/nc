@@ -1,0 +1,34 @@
+---
+// Text left, two stacked photos right (Welkom block on the Over ons mockup, ref-05).
+import { Picture } from 'astro:assets';
+import type { Img } from '../data/images';
+
+interface Props {
+  images: Img[];
+  reverse?: boolean;
+}
+const { images, reverse = false } = Astro.props;
+---
+
+<div class:list={['split', { 'split--reverse': reverse }]}>
+  <div class="split__text"><slot /></div>
+  <div class="split__media">
+    {images.map((im) => (
+      <Picture src={im.src} alt={im.alt} formats={['avif', 'webp']} widths={[480, 800].filter((w) => w <= im.src.width)} sizes="(min-width: 900px) 460px, 100vw" loading="lazy" decoding="async" />
+    ))}
+  </div>
+</div>
+
+<style>
+  .split { display: grid; gap: var(--sp-10); align-items: center; }
+  .split__text { max-width: 40rem; }
+  .split__text :global(.prose) { font-size: var(--fs-base); }
+  .split__media { display: grid; gap: var(--sp-4); }
+  .split__media :global(img) { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius-card); box-shadow: var(--shadow-card); }
+  @media (min-width: 900px) {
+    .split { grid-template-columns: 1.5fr 1fr; gap: var(--sp-16); }
+    .split--reverse .split__text { order: 2; }
+    /* photos keep their own proportions, as in the mockup */
+    .split__media :global(img) { aspect-ratio: auto; }
+  }
+</style>

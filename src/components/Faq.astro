@@ -1,0 +1,60 @@
+---
+// FAQ list with details/summary. For the FAQPage schema pass the same items to
+// faqPageFromCopy() in src/data/jsonld.ts and hand the result to BaseLayout's jsonLd.
+import type { FaqPair } from '../lib/copy';
+import { parseCopy } from '../lib/copy';
+import RichText from './RichText.astro';
+
+interface Props {
+  /** parsed pairs from the copy, or plain question/answer strings */
+  items: (FaqPair | { question: string; answer: string })[];
+  title?: string;
+  id?: string;
+}
+const { items, title = 'Veelgestelde vragen', id = 'faq' } = Astro.props;
+const pairs: FaqPair[] = items.map((i) =>
+  typeof i.answer === 'string' ? { question: i.question, answer: parseCopy(i.answer).intro.blocks } : (i as FaqPair),
+);
+---
+
+<div class:list={['faq', { 'faq--wide': pairs.length > 3 }]}>
+  {title && <h2 id={id} class="faq__title">{title}</h2>}
+  <div class="faq__list">
+    {pairs.map((p) => (
+      <details class="faq__item">
+        <summary>
+          <h3 class="faq__q">{p.question}</h3>
+          <svg class="faq__icon" viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true" focusable="false">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </summary>
+        <div class="faq__a"><RichText blocks={p.answer} /></div>
+      </details>
+    ))}
+  </div>
+</div>
+
+<style>
+  .faq__title { margin-bottom: var(--sp-8); }
+  .faq__list { display: grid; gap: var(--sp-3); align-items: start; max-width: 50rem; }
+  @media (min-width: 1100px) {
+    .faq--wide .faq__list { grid-template-columns: 1fr 1fr; max-width: none; gap: var(--sp-3) var(--sp-5); }
+  }
+  .faq__item { background: var(--c-offwhite); border: var(--border-card); border-radius: var(--radius-card); }
+  .faq__item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    min-height: 56px;
+    padding: var(--sp-4) var(--sp-5);
+    cursor: pointer;
+    list-style: none;
+  }
+  .faq__item summary::-webkit-details-marker { display: none; }
+  .faq__item summary:focus-visible { outline: var(--focus-ring); outline-offset: -4px; }
+  .faq__q { font-family: var(--font-body); font-size: var(--fs-base); font-weight: 700; line-height: 1.4; }
+  .faq__icon { flex: none; color: var(--c-green-olive); transition: transform var(--dur) var(--ease); }
+  .faq__item[open] .faq__icon { transform: rotate(45deg); }
+  .faq__a { padding: 0 var(--sp-5) var(--sp-5); }
+</style>

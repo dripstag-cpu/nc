@@ -1,0 +1,73 @@
+---
+// /veelgestelde-vragen/: grouped questions; the FAQPage schema only has questions without a placeholder.
+// Copy from veelgestelde-vragen.md.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Faq from '../components/Faq.astro';
+import { breadcrumbs, faqPageFromCopy } from '../data/jsonld';
+import { pageCopy } from '../lib/page-copy';
+
+const copy = await pageCopy('veelgestelde-vragen');
+const groups = copy.sections.filter((s) => s.faq.length > 0);
+const buttonHref: Record<string, string> = {
+  'Bekijk beschikbaarheid': '/beschikbaarheid/',
+  'Naar de omgeving': '/omgeving/',
+};
+---
+
+<BaseLayout
+  title={copy.meta.title}
+  description={copy.meta.description}
+  jsonLd={[
+    breadcrumbs([{ name: 'Home', path: '/' }, { name: copy.meta.h1, path: copy.meta.slug }]),
+    faqPageFromCopy(groups.flatMap((g) => g.faq)),
+  ]}
+>
+  <PageHeader title={copy.meta.h1} />
+
+  <section class="section bg-offwhite">
+    <div class="container faq-page">
+      <nav aria-label="Onderwerpen" class="faq-page__toc">
+        <ul role="list">
+          {groups.map((g) => <li><a href={`#${g.id}`}>{g.name}</a></li>)}
+        </ul>
+      </nav>
+      <div class="faq-page__groups">
+        {groups.map((g) => (
+          <section id={g.id} class="faq-page__group" aria-label={g.name}>
+            <Faq items={g.faq} title={g.name} id={`h-${g.id}`} />
+            {g.buttons.filter((b) => buttonHref[b.label]).map((b) => (
+              <a class="btn btn--secondary faq-page__btn" href={buttonHref[b.label]}>{b.label}</a>
+            ))}
+          </section>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .faq-page { display: grid; gap: var(--sp-10); }
+  .faq-page__toc ul { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+  .faq-page__toc a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--sp-4);
+    border: var(--border-card);
+    border-radius: 999px;
+    background: var(--c-cream);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .faq-page__groups { display: grid; gap: var(--sp-12); }
+  .faq-page__group { scroll-margin-top: calc(var(--header-h) + 1rem); }
+  .faq-page__group :global(.faq__title) { margin-bottom: var(--sp-5); font-size: clamp(1.75rem, 1.5vw + 1.3rem, 2.5rem); }
+  .faq-page__btn { margin-top: var(--sp-5); }
+  @media (min-width: 1000px) {
+    .faq-page { grid-template-columns: 240px 1fr; }
+    .faq-page__toc { position: sticky; top: calc(var(--header-h) + 1.5rem); align-self: start; }
+    .faq-page__toc ul { display: grid; }
+  }
+</style>

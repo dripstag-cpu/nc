@@ -1,0 +1,80 @@
+---
+// Shared renderer for the four Tommy Booking Support widgets. Use the wrappers
+// (TommySearchBar, TommySearchPage, TommyReservation, TommyMatrix), not this file directly.
+//
+// Order is essential (tested 2026-10-08):
+//   1. preconnect + widgets.css link
+//   2. style block with the --t3- overrides AFTER the link, otherwise Tommy's defaults win
+//   3. Consent Mode default "denied" BEFORE the widget script (no _ga cookies from Tommy's GTM)
+//   4. widget div, result/reservation URLs set at runtime from location.origin
+//   5. widget script with defer (matrix: injected when the block scrolls into view)
+// Only one widget per type per page; a second one throws a script error.
+import {
+  TOMMY_TOKEN,
+  TOMMY_HOST,
+  TOMMY_CSS,
+  TOMMY_STYLE_OVERRIDES,
+  CONSENT_DEFAULT_SCRIPT,
+  RESULT_PAGE_PATH,
+  RESERVATION_PAGE_PATH,
+  tommyScript,
+  type TommyWidget,
+} from '../../data/tommy';
+import Placeholder from '../Placeholder.astro';
+
+interface Props {
+  widget: TommyWidget;
+  /** widget-specific data-* attributes (without the data- prefix) */
+  attrs?: Record<string, string | number>;
+  /** reserve space against layout shift */
+  minHeight: string;
+  /** load the script only when the block comes into view */
+  lazy?: boolean;
+  /** only show and load the widget when the URL carries a search (html.has-search, set by TommySearchPage) */
+  onlyWithSearch?: boolean;
+  id?: string;
+  /** chip above widgets that show prices: Tommy still has test prices (3 to 14 euro) */
+  testPriceNote?: boolean;
+  /** allowed Tommy accommodation ids for ?verblijf=<id> (sets data-accommodation-id, searchpage) */
+  accommodationFromUrl?: number[];
+}
+const { widget, attrs = {}, minHeight, lazy = false, onlyWithSearch = false, id, testPriceNote = false, accommodationFromUrl = [] } = Astro.props;
+
+const dataAttrs: Record<string, string> = {
+  'data-tommy-widget': widget,
+  'data-token': TOMMY_TOKEN,
+  'data-host': TOMMY_HOST,
+  'data-show-available-count': '1',
+};
+for (const [k, v] of Object.entries(attrs)) dataAttrs[`data-${k}`] = String(v);
+
+const src = tommyScript(widget);
+const uid = `tommy-${widget}`;
+const setUrls = `(function(){var el=document.getElementById(${JSON.stringify(uid)});if(!el)return;var ids=${JSON.stringify(accommodationFromUrl)};var v=parseInt(new URLSearchParams(location.search).get('verblijf')||'',10);if(ids.indexOf(v)>-1)el.setAttribute('data-accommodation-id',String(v));el.setAttribute('data-result-page-url',location.origin+${JSON.stringify(RESULT_PAGE_PATH)});el.setAttribute('data-reservation-page-url',location.origin+${JSON.stringify(RESERVATION_PAGE_PATH)});})();`;
+const searchLoader = `(function(){if(!document.documentElement.classList.contains('has-search'))return;var s=document.createElement('script');s.src=${JSON.stringify(src)};s.defer=true;document.body.appendChild(s);})();`;
+const lazyLoader = `(function(){var el=document.getElementById(${JSON.stringify(uid)});if(!el)return;var load=function(){var s=document.createElement('script');s.src=${JSON.stringify(src)};s.defer=true;document.body.appendChild(s);};if(!('IntersectionObserver' in window)){load();return;}var io=new IntersectionObserver(function(es){if(es.some(function(e){return e.isIntersecting;})){io.disconnect();load();}},{rootMargin:'400px 0px'});io.observe(el);})();`;
+---
+
+<link rel="preconnect" href={TOMMY_HOST} />
+<link rel="stylesheet" type="text/css" href={TOMMY_CSS} />
+<style is:inline set:html={TOMMY_STYLE_OVERRIDES}></style>
+<script is:inline set:html={CONSENT_DEFAULT_SCRIPT}></script>
+
+<div class:list={['tommy', { 'tommy--search-only': onlyWithSearch }]} id={id}>
+  {testPriceNote && <p class="tommy__note"><Placeholder text="echte tarieven in het boekingssysteem (de module toont nu testprijzen)" /></p>}
+  <div id={uid} class="tommy__widget" style={`min-height:${minHeight}`} {...dataAttrs}></div>
+  <script is:inline set:html={setUrls}></script>
+</div>
+
+{onlyWithSearch ? (
+  <script is:inline set:html={searchLoader}></script>
+) : lazy ? (
+  <script is:inline set:html={lazyLoader}></script>
+) : (
+  <script is:inline defer src={src}></script>
+)}
+
+<style>
+  .tommy__note { margin-bottom: var(--sp-4); }
+  :global(html:not(.has-search)) .tommy--search-only { display: none; }
+</style>

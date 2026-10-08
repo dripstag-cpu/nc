@@ -1,0 +1,140 @@
+---
+// Footer after the mockups (decisions.md v3): light cream, botanical meadow in both corners,
+// logo + payoff in script + three round social placeholders, five columns, legal links, Local Levers credit.
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import Botanical from './Botanical.astro';
+import Placeholder from './Placeholder.astro';
+import { site, footerColumns, legalLinks } from '../data/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer bg-paper">
+  <Botanical class="site-footer__plant site-footer__plant--left" width={190} flip />
+  <Botanical class="site-footer__plant site-footer__plant--right" width={240} />
+  <div class="container site-footer__inner">
+    <div class="site-footer__grid">
+      <div class="site-footer__brand">
+        <a href="/" class="site-footer__logo" aria-label="Camping Naescas, naar de homepage"><Logo stacked /></a>
+        <p class="payoff site-footer__payoff">{site.payoff}</p>
+        <div class="site-footer__social">
+          <span class="site-footer__social-icons" aria-hidden="true">
+            <span><Icon name="facebook" size={18} /></span>
+            <span><Icon name="instagram" size={18} /></span>
+            <span><Icon name="tripadvisor" size={18} /></span>
+          </span>
+          <Placeholder text="social media" />
+        </div>
+      </div>
+
+      {footerColumns.map((col) => (
+        <nav aria-label={`Footer: ${col.title}`}>
+          <h2 class="site-footer__title">{col.title}</h2>
+          <ul role="list">
+            {col.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+          </ul>
+        </nav>
+      ))}
+
+      <div>
+        <h2 class="site-footer__title">Contact</h2>
+        <address>
+          {site.name}<br />
+          {site.address.street}<br />
+          {site.address.postalCode} {site.address.city}
+        </address>
+        <ul role="list" class="site-footer__chips">
+          <li>{site.phone ? <a href={site.phone.href}>{site.phone.display}</a> : <Placeholder text="telefoonnummer" />}</li>
+          <li>{site.email ? <a href={`mailto:${site.email}`}>{site.email}</a> : <Placeholder text="e-mailadres" />}</li>
+          {!site.address.confirmed && <li><Placeholder text="adres bevestigen" /></li>}
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="site-footer__title">Openingstijden receptie</h2>
+        <p class="site-footer__chips"><Placeholder text="openingstijden" /></p>
+      </div>
+    </div>
+
+    <div class="site-footer__bottom">
+      <p>&copy; {year} {site.name}, {site.payoff}</p>
+      <nav aria-label="Juridisch">
+        <ul role="list" class="site-footer__legal">
+          {legalLinks.map((l, i) => <li>{i > 0 && <span class="site-footer__sep" aria-hidden="true">|</span>}<a href={l.href}>{l.label}</a></li>)}
+        </ul>
+      </nav>
+    </div>
+    <div class="site-footer__meta">
+      <p>Website gemaakt door <a href="https://locallevers.com/">Local Levers</a></p>
+      <p>Beelden zijn tijdelijke referenties uit de briefing en worden vervangen door eigen fotografie.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer { position: relative; overflow: hidden; padding-block: var(--sp-12) var(--sp-6); font-size: 0.875rem; border-top: 1px solid rgba(34, 66, 43, 0.08); }
+  .site-footer__inner { position: relative; }
+  .site-footer :global(.site-footer__plant) { position: absolute; bottom: -4px; height: auto; opacity: 0.45; }
+  .site-footer :global(.site-footer__plant--left) { left: -60px; width: 190px; }
+  .site-footer :global(.site-footer__plant--right) { right: -40px; width: 240px; }
+  .site-footer a { color: var(--c-green-dark); text-decoration: none; }
+  .site-footer a:hover { color: var(--c-green-olive); text-decoration: underline; }
+  .site-footer__brand { display: grid; justify-items: start; }
+  .site-footer__logo { display: inline-flex; }
+  .site-footer__logo:hover { text-decoration: none; }
+  .site-footer__payoff { margin-top: var(--sp-2); font-size: 1.75rem; line-height: 1.1; color: var(--c-green-olive); }
+  .site-footer__social { display: grid; justify-items: start; gap: var(--sp-3); margin-top: var(--sp-4); }
+  .site-footer__social-icons { display: inline-flex; gap: var(--sp-3); color: var(--c-green-dark); }
+  .site-footer__social-icons > span { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid rgba(34, 66, 43, 0.55); border-radius: 50%; }
+  .site-footer__grid { display: grid; grid-template-columns: 1fr; gap: var(--sp-8); }
+  .site-footer__title {
+    margin-bottom: var(--sp-3);
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--c-green-dark);
+  }
+  .site-footer ul a { display: inline-flex; align-items: center; min-height: 30px; }
+  .site-footer address { font-style: normal; line-height: 1.75; }
+  .site-footer__chips { display: grid; justify-items: start; gap: var(--sp-2); margin-top: var(--sp-3); }
+  /* chips stay on one line in the narrow footer columns */
+  .site-footer__chips :global(.placeholder) { white-space: nowrap; font-size: 0.75rem; }
+  .site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--sp-3) var(--sp-8);
+    margin-top: var(--sp-10);
+    padding-top: var(--sp-4);
+    border-top: 1px solid rgba(34, 66, 43, 0.14);
+    font-size: 0.8125rem;
+  }
+  .site-footer__legal { display: flex; flex-wrap: wrap; gap: 0; }
+  .site-footer__legal li { display: inline-flex; align-items: center; }
+  .site-footer__sep { margin-inline: var(--sp-3); color: rgba(34, 66, 43, 0.5); }
+  .site-footer__legal a { min-height: 32px; }
+  .site-footer__meta { display: grid; gap: var(--sp-1); margin-top: var(--sp-3); font-size: 0.8125rem; }
+  .site-footer__meta a { text-decoration: underline; }
+
+  /* phones: the meadow sits below the text */
+  @media (max-width: 1099px) {
+    .site-footer { padding-bottom: 130px; }
+    .site-footer :global(.site-footer__plant--left) { width: 150px; }
+    .site-footer :global(.site-footer__plant--right) { width: 180px; }
+  }
+  @media (min-width: 640px) {
+    .site-footer__grid { grid-template-columns: repeat(2, 1fr); }
+    .site-footer__brand { grid-column: 1 / -1; }
+  }
+  @media (min-width: 1100px) {
+    .site-footer { padding-block: var(--sp-12) var(--sp-5); }
+    .site-footer__inner { padding-inline: calc(var(--gutter) + 40px); }
+    .site-footer__grid { grid-template-columns: 1.25fr 1fr 0.85fr 0.95fr 1.1fr 1.15fr; gap: var(--sp-6); }
+    .site-footer__brand { grid-column: auto; justify-items: center; text-align: center; }
+    .site-footer__social { justify-items: center; }
+    .site-footer__meta, .site-footer__bottom { padding-right: 150px; }
+  }
+</style>

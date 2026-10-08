@@ -1,0 +1,85 @@
+---
+// Booking block after the Verblijf mockup (p09, ref-06): a cream card with "Reserveren" (calendar icon,
+// our light DateSearch) next to "Liever telefonisch?" (leaf icon, the number large in Cormorant),
+// optionally with a photo against the right edge. No Tommy code.
+import { Picture } from 'astro:assets';
+import DateSearch from './DateSearch.astro';
+import Icon from './Icon.astro';
+import RichText from './RichText.astro';
+import Placeholder from './Placeholder.astro';
+import type { Block } from '../lib/copy';
+import type { Img } from '../data/images';
+import { site } from '../data/site';
+
+interface Props {
+  title?: string;
+  intro?: Block[];
+  phoneText?: Block[];
+  image?: Img;
+  accommodationId?: number;
+  /** stacked layout for a narrow column (detail pages, ref-07) */
+  compact?: boolean;
+}
+const { title = 'Zoek een plek', intro = [], phoneText = [], image, accommodationId, compact = false } = Astro.props;
+---
+
+<div class:list={['reserve', { 'reserve--image': image && !compact, 'reserve--compact': compact }]}>
+  <div class="reserve__search">
+    <DateSearch title={title} accommodationId={accommodationId}><slot /></DateSearch>
+    {intro.length > 0 && <RichText blocks={intro} class="reserve__intro" />}
+  </div>
+  <div class="reserve__phone">
+    <h3 class="reserve__phone-title"><Icon name="leafsprig" size={30} />Liever telefonisch?</h3>
+    {phoneText.length > 0 ? <RichText blocks={phoneText} /> : <p>Bel ons gerust, we helpen je graag met je reservering.</p>}
+    <p class="reserve__number">
+      {site.phone ? <a href={site.phone.href}>{site.phone.display}</a> : <Placeholder text="telefoonnummer" />}
+    </p>
+  </div>
+  {image && !compact && (
+    <div class="reserve__media">
+      <Picture src={image.src} alt={image.alt} formats={['avif', 'webp']} widths={[480, 900].filter((w) => w <= image.src.width)} sizes="(min-width: 1000px) 420px, 100vw" loading="lazy" decoding="async" />
+    </div>
+  )}
+</div>
+
+<style>
+  .reserve {
+    --pad: var(--sp-6);
+    display: grid;
+    gap: var(--sp-6);
+    padding: var(--pad);
+    overflow: hidden;
+    background: var(--c-paper) var(--grain);
+    border: var(--border-card);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+  .reserve :global(.date-search) { padding: 0; border: 0; box-shadow: none; background: transparent; }
+  .reserve :global(.reserve__intro) { margin-top: var(--sp-4); font-size: 0.9375rem; }
+  .reserve__phone { display: grid; gap: var(--sp-2); align-content: start; color: var(--c-green-dark); }
+  .reserve__phone-title { display: flex; align-items: center; gap: var(--sp-3); font-size: clamp(1.5rem, 0.6vw + 1.3rem, 1.875rem); line-height: 1.15; margin-bottom: var(--sp-2); }
+  .reserve__phone-title :global(svg) { flex: none; color: var(--c-green-olive); }
+  .reserve__phone :global(p) { font-size: 0.9375rem; }
+  .reserve__number { margin-top: var(--sp-2); font-family: var(--font-display); font-size: 2rem; line-height: 1.1; }
+  .reserve__number a { text-decoration: none; }
+  .reserve__media { margin: var(--sp-2) calc(-1 * var(--pad)) calc(-1 * var(--pad)); }
+  .reserve__media :global(picture) { display: block; height: 100%; }
+  .reserve__media :global(img) { display: block; width: 100%; height: 100%; object-fit: cover; aspect-ratio: 16 / 9; }
+
+  @media (min-width: 1000px) {
+    .reserve { --pad: var(--sp-8); grid-template-columns: 2.2fr 1fr; gap: var(--sp-10); }
+    .reserve__phone { padding-left: var(--sp-8); border-left: 1px solid rgba(34, 66, 43, 0.14); }
+    .reserve--image { grid-template-columns: 1.55fr 1fr 1.15fr; padding-right: 0; }
+    .reserve--image :global(.date-search__fields) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .reserve--image :global(.date-search__submit) { grid-column: 1 / -1; }
+    .reserve--image .reserve__media { margin: calc(-1 * var(--pad)) 0 calc(-1 * var(--pad)) 0; }
+    .reserve--image .reserve__media :global(img) { aspect-ratio: auto; min-height: 100%; }
+    /* narrow column on the detail pages (ref-07): everything stacked */
+    .reserve--compact { grid-template-columns: 1fr; gap: var(--sp-6); }
+    .reserve--compact .reserve__phone { padding: var(--sp-6) 0 0; border-left: 0; border-top: 1px solid rgba(34, 66, 43, 0.14); }
+    .reserve--compact :global(.date-search__fields) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .reserve--compact :global(.date-search__submit) { grid-column: 1 / -1; }
+  }
+  /* narrow middle column on the detail pages: each date gets a full row so the year stays visible */
+  .reserve--compact :global(.field:has(input[type='date'])) { grid-column: 1 / -1; }
+</style>

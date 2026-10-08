@@ -1,0 +1,49 @@
+---
+// Icon row with facts (persons, sanitary, dogs, what is included) as a definition list.
+// Values may contain placeholders.
+import Icon, { type IconName } from './Icon.astro';
+import RichText from './RichText.astro';
+import { parseInline, type Inline } from '../lib/copy';
+
+interface Fact {
+  icon: IconName;
+  label: string;
+  value: string | Inline[];
+}
+interface Props {
+  items: Fact[];
+  columns?: number;
+}
+const { items, columns = 3 } = Astro.props;
+---
+
+<dl class="fact-row" style={`--fact-cols:${columns}`}>
+  {items.map((f) => (
+    <div class="fact-row__item">
+      <dt><span class="fact-row__icon"><Icon name={f.icon} size={28} /></span>{f.label}</dt>
+      <dd><RichText inline={typeof f.value === 'string' ? parseInline(f.value) : f.value} /></dd>
+    </div>
+  ))}
+</dl>
+
+<style>
+  .fact-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 var(--sp-6);
+    padding: var(--sp-2) var(--sp-6);
+    background: var(--c-paper) var(--grain);
+    border: var(--border-card);
+    border-radius: var(--radius-card);
+  }
+  .fact-row__item { position: relative; padding: var(--sp-4) 0 var(--sp-4) calc(28px + var(--sp-3)); border-bottom: 1px dashed rgba(34, 66, 43, 0.22); }
+  .fact-row__icon { position: absolute; left: 0; top: var(--sp-4); color: var(--c-green-olive); }
+  dt { font-size: 0.9375rem; font-weight: 700; line-height: 1.4; }
+  dd { margin: var(--sp-1) 0 0; font-size: 0.9375rem; line-height: 1.5; }
+  @media (min-width: 640px) {
+    .fact-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1000px) {
+    .fact-row { grid-template-columns: repeat(var(--fact-cols, 3), minmax(0, 1fr)); }
+  }
+</style>

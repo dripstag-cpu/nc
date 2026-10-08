@@ -1,0 +1,7 @@
+---
+// /verblijf/trekkershut/: accommodation detail page (see AccommodationPage.astro)
+import AccommodationPage from '../../components/AccommodationPage.astro';
+import { accommodationBySlug } from '../../data/site';
+---
+
+<AccommodationPage acc={accommodationBySlug('trekkershut')!} />

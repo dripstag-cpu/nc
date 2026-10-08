@@ -1,0 +1,70 @@
+---
+// Generic text page: light page header with H1 and the intro (blocks before the first ##),
+// then every ## section as an h2 with its text, sub items (h3), FAQ pairs and buttons.
+// Used for privacy, cookies, algemene voorwaarden and bevestiging.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from './PageHeader.astro';
+import RichText from './RichText.astro';
+import Faq from './Faq.astro';
+import { breadcrumbs } from '../data/jsonld';
+import type { PageCopy } from '../lib/page-copy';
+import type { Button } from '../lib/copy';
+
+interface Props {
+  copy: PageCopy;
+  noindex?: boolean;
+  /** map button labels to targets; unknown labels are not rendered as links */
+  links?: Record<string, string>;
+  /** first section rendered inside the header as intro (instead of copy.intro) */
+  introSection?: string;
+  breadcrumb?: boolean;
+}
+const { copy, noindex = false, links = {}, introSection, breadcrumb = true } = Astro.props;
+const introFromSection = introSection ? copy.sections.find((s) => s.name === introSection) : undefined;
+const sections = copy.sections.filter((s) => s !== introFromSection);
+const target = (b: Button) => b.href ?? links[b.label];
+---
+
+<BaseLayout
+  title={copy.meta.title}
+  description={copy.meta.description}
+  noindex={noindex}
+  jsonLd={breadcrumb ? breadcrumbs([{ name: 'Home', path: '/' }, { name: copy.meta.h1, path: copy.meta.slug }]) : undefined}
+>
+  <PageHeader title={copy.meta.h1}>
+    <RichText blocks={introFromSection ? introFromSection.blocks : copy.intro.blocks} />
+  </PageHeader>
+  <section class="section bg-offwhite copy-page">
+    <div class="container"><div class="copy-page__body">
+      {sections.map((s) => (
+        <section class="copy-page__section" aria-labelledby={`s-${s.id}`}>
+          <h2 id={`s-${s.id}`}>{s.name}</h2>
+          <RichText blocks={s.blocks} />
+          {s.items.map((it) => (
+            <div class="copy-page__item">
+              <h3>{it.title}</h3>
+              <RichText blocks={it.blocks} />
+            </div>
+          ))}
+          {s.faq.length > 0 && <Faq items={s.faq} title="" />}
+          {s.buttons.filter(target).length > 0 && (
+            <p class="copy-page__buttons">
+              {s.buttons.filter(target).map((b, i) => (
+                <a class:list={['btn', i === 0 ? 'btn--primary' : 'btn--secondary']} href={target(b)}>{b.label}</a>
+              ))}
+            </p>
+          )}
+        </section>
+      ))}
+    </div></div>
+  </section>
+</BaseLayout>
+
+<style>
+  .copy-page__body { display: grid; gap: var(--sp-12); max-width: 52rem; }
+  .copy-page__section { display: grid; gap: var(--sp-4); }
+  .copy-page h2 { font-size: clamp(1.75rem, 1.5vw + 1.3rem, 2.5rem); }
+  .copy-page__item { display: grid; gap: var(--sp-2); }
+  .copy-page__item h3 { font-size: var(--fs-h4); }
+  .copy-page__buttons { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
+</style>

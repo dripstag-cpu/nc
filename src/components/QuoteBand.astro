@@ -1,0 +1,47 @@
+---
+// Band over a photo (ref-05): "Onze visie" on Over ons (dark green gradient, centred white text,
+// ornament above the heading) and the closing quote on Omgeving (sunset, white quote, ornament below).
+import { Picture } from 'astro:assets';
+import Ornament from './Ornament.astro';
+import type { Img } from '../data/images';
+
+interface Props {
+  image: Img;
+  /** heading (h2), optional */
+  title?: string;
+  /** quote line, rendered in Cormorant between quotation marks */
+  quote?: string;
+  /** focal point of the photo, CSS object-position */
+  position?: string;
+}
+const { image, title, quote, position = '50% 50%' } = Astro.props;
+---
+
+<section class:list={['quote-band', { 'quote-band--quote': quote }]} aria-label={title ?? 'Citaat'}>
+  <Picture class="quote-band__img" src={image.src} alt="" style={`object-position:${position}`} formats={['avif', 'webp']} widths={[800, 1400, 2000].filter((w) => w <= image.src.width)} sizes="100vw" loading="lazy" decoding="async" />
+  <div class="quote-band__shade" aria-hidden="true"></div>
+  <div class="container quote-band__content on-dark reveal">
+    {title && <Ornament class="quote-band__ornament" line={40} />}
+    {title && <h2 class="quote-band__title">{title}</h2>}
+    {quote && <p class="quote-band__quote">&ldquo;{quote}&rdquo;</p>}
+    <div class="quote-band__body"><slot /></div>
+    {quote && <Ornament class="quote-band__ornament" line={40} />}
+  </div>
+</section>
+
+<style>
+  .quote-band { position: relative; overflow: hidden; color: var(--c-offwhite); background: var(--c-green-dark); }
+  .quote-band :global(picture), .quote-band :global(.quote-band__img) { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .quote-band :global(.quote-band__img) { object-fit: cover; }
+  .quote-band__shade { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(24, 46, 30, 0.72) 0%, rgba(24, 46, 30, 0.55) 55%, rgba(24, 46, 30, 0.4) 100%); }
+  .quote-band--quote .quote-band__shade { background: radial-gradient(ellipse at center, rgba(20, 30, 22, 0.5) 0%, rgba(20, 30, 22, 0.25) 60%, rgba(20, 30, 22, 0.15) 100%); }
+  .quote-band__content { position: relative; display: grid; justify-items: center; gap: var(--sp-3); padding-block: var(--sp-16); text-align: center; }
+  .quote-band__title { color: var(--c-offwhite); }
+  .quote-band__quote { font-family: var(--font-display); font-size: clamp(1.75rem, 1.6vw + 1.3rem, 2.625rem); font-weight: 500; line-height: 1.2; max-width: 30ch; color: var(--c-offwhite); text-shadow: 0 2px 14px rgba(10, 20, 12, 0.5); }
+  .quote-band__body { max-width: 50ch; }
+  .quote-band__body :global(p) { color: var(--c-offwhite); }
+  .quote-band :global(.quote-band__ornament) { color: var(--c-offwhite); }
+  @media (min-width: 900px) {
+    .quote-band__content { padding-block: var(--sp-20); }
+  }
+</style>

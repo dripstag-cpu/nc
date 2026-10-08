@@ -1,0 +1,179 @@
+---
+// /horeca/: the Rustpunt (name under reservation), after the Horeca mockup (page 8). Copy from horeca.md.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import IconRow from '../components/IconRow.astro';
+import RichText from '../components/RichText.astro';
+import Faq from '../components/Faq.astro';
+import Logo from '../components/Logo.astro';
+import Ornament from '../components/Ornament.astro';
+import Icon from '../components/Icon.astro';
+import { Picture } from 'astro:assets';
+import { breadcrumbs, cafe, faqPageFromCopy } from '../data/jsonld';
+import { img } from '../data/images';
+import { pageCopy } from '../lib/page-copy';
+import { field, section, toPlain } from '../lib/copy';
+import { listItems, need, paragraphs } from '../lib/sections';
+import type { IconName } from '../components/icon-names';
+
+const copy = await pageCopy('horeca');
+const hero = need(section(copy, 'Hero'), 'Hero');
+const offer = need(section(copy, 'Wat je er krijgt'), 'Wat je er krijgt');
+const who = need(section(copy, 'Voor wie'), 'Voor wie');
+const hours = need(section(copy, 'Openingstijden en bereikbaarheid'), 'Openingstijden en bereikbaarheid');
+const menu = need(section(copy, 'Menukaart'), 'Menukaart');
+const routes = need(section(copy, 'Ligging aan routes'), 'Ligging aan routes');
+const faq = need(section(copy, 'Veelgestelde vragen'), 'Veelgestelde vragen');
+const stay = need(section(copy, 'Verblijf je liever een nachtje?'), 'Verblijf je liever een nachtje?');
+
+const offerIcons: IconName[] = ['coffee', 'leafsingle', 'cutlery', 'wine', 'heart'];
+const heroParas = paragraphs(hero.blocks);
+---
+
+<BaseLayout
+  title={copy.meta.title}
+  description={copy.meta.description}
+  jsonLd={[
+    breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Horeca', path: copy.meta.slug }]),
+    cafe('Rustpunt Naescas', copy.meta.description),
+    faqPageFromCopy(faq.faq),
+  ]}
+>
+  <PageHero title={copy.meta.h1} sub={field(hero, 'onderregel') ?? toPlain(heroParas.slice(0, 1))} image={img.kasTafel} split>
+    <RichText blocks={field(hero, 'onderregel') ? heroParas : heroParas.slice(1)} />
+    <a class="btn btn--light" href="/contact/#route">{hero.buttons[0]?.label ?? 'Route plannen'}</a>
+    <a class="btn btn--ghost-light" href="#menukaart">{hero.buttons[1]?.label ?? 'Naar de menukaart'}</a>
+  </PageHero>
+
+  <section class="section bg-offwhite hor-offer" aria-labelledby="offer-title">
+    <div class="container reveal">
+      <div class="hor-intro">
+        <div>
+          <h2 id="offer-title">{offer.name}</h2>
+          <RichText blocks={paragraphs(offer.blocks)} />
+        </div>
+        <p class="accent hor-intro__accent"><span>Goed eten maakt<br />het buitenleven<br />nog mooier</span><Ornament line={30} /></p>
+      </div>
+      <IconRow caps={false} items={listItems(offer.blocks).map((i, n) => ({ icon: offerIcons[n] ?? 'coffee', title: toPlain(i) }))} />
+      <div class="hor-photos">
+        <Picture class="hor-photo hor-photo--a" src={img.gerecht.src} alt={img.gerecht.alt} formats={['avif', 'webp']} widths={[480, 800, 1200]} sizes="(min-width: 900px) 680px, 100vw" loading="lazy" decoding="async" />
+        <Picture class="hor-photo hor-photo--b" src={img.kasTerras.src} alt={img.kasTerras.alt} formats={['avif', 'webp']} widths={[480, 800, 1200]} sizes="(min-width: 900px) 680px, 100vw" loading="lazy" decoding="async" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-paper" aria-labelledby="who-title">
+    <div class="container hor-who reveal">
+      <div>
+        <p class="accent hor-script">Iedereen is welkom</p>
+        <h2 id="who-title">{who.name}</h2>
+        <ul role="list" class="hor-who__list">
+          {who.items.map((it) => (
+            <li>
+              <h3>{it.title}</h3>
+              <RichText blocks={it.blocks} />
+            </li>
+          ))}
+        </ul>
+        <a class="btn btn--primary hor-btn" href="#menukaart">Bekijk de menukaart<Icon name="chevron" size={16} /></a>
+      </div>
+      <aside class="hor-card" aria-label="Rustpunt Naescas">
+        <Logo markOnly class="hor-card__mark" />
+        <p class="hor-card__name">Rustpunt Naescas</p>
+        <p class="accent hor-card__line">Meer dan een horecaplek,<br />het is een gevoel</p>
+        <Ornament line={30} />
+      </aside>
+    </div>
+  </section>
+
+  <section class="section bg-offwhite" aria-labelledby="hours-title">
+    <div class="container hor-two reveal">
+      <div>
+        <h2 id="hours-title">{hours.name}</h2>
+        <RichText blocks={hours.blocks} />
+        <a class="btn btn--secondary hor-btn" href="/contact/#route">{hours.buttons[0]?.label ?? 'Naar contact en route'}</a>
+      </div>
+      <div>
+        <h2>{routes.name}</h2>
+        <RichText blocks={routes.blocks} />
+        <a class="btn btn--secondary hor-btn" href="/omgeving/#fietsen-en-wandelen">{routes.buttons[0]?.label ?? 'Fietsen en wandelen in de omgeving'}</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-cream" id="menukaart" aria-labelledby="menu-title">
+    <div class="container reveal">
+      <h2 id="menu-title">{menu.name}</h2>
+      <RichText blocks={menu.blocks} class="hor-menu__intro" />
+      <div class="hor-menu">
+        {menu.items.map((it) => (
+          <div class="hor-menu__card">
+            <h3>{it.title}</h3>
+            <RichText blocks={it.blocks} />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-offwhite" aria-label={faq.name}>
+    <div class="container reveal">
+      <Faq items={faq.faq} title={faq.name} id="faq" />
+    </div>
+  </section>
+
+  <section class="section bg-dark" aria-labelledby="stay-title">
+    <div class="container hor-stay reveal">
+      <h2 id="stay-title">{stay.name}</h2>
+      <RichText blocks={stay.blocks} />
+      <a class="btn btn--light" href="/beschikbaarheid/">{stay.buttons[0]?.label ?? 'Bekijk beschikbaarheid'}</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hor-intro { display: grid; gap: var(--sp-6); align-items: center; margin-bottom: var(--sp-10); }
+  .hor-intro > div { display: grid; gap: var(--sp-4); max-width: 40rem; }
+  .hor-intro__accent { display: grid; justify-items: center; gap: var(--sp-3); text-align: center; }
+  .hor-intro__accent > span { transform: rotate(-5deg); line-height: 1.2; }
+  .hor-photos { display: grid; gap: var(--sp-4); margin-top: var(--sp-10); }
+  .hor-photos :global(img) { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius-card); box-shadow: var(--shadow-card); }
+  .hor-script { font-size: clamp(2.5rem, 1.6vw + 2rem, 3.25rem); color: var(--c-green-dark); transform: rotate(-2deg); transform-origin: left; }
+  .hor-who { display: grid; gap: var(--sp-10); align-items: center; }
+  .hor-who h2 { margin-top: var(--sp-3); font-size: clamp(1.75rem, 1vw + 1.4rem, 2.25rem); }
+  .hor-who__list { display: grid; gap: var(--sp-5); margin-top: var(--sp-5); }
+  .hor-who__list h3 { font-family: var(--font-body); font-size: 1rem; font-weight: 700; margin-bottom: var(--sp-1); }
+  .hor-who__list :global(.prose) { font-size: 0.9375rem; }
+  .hor-btn { margin-top: var(--sp-6); }
+  .hor-card {
+    display: grid;
+    justify-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-10) var(--sp-6);
+    background: color-mix(in srgb, var(--c-sage-light) 50%, var(--c-paper));
+    border-radius: var(--radius-card);
+    text-align: center;
+  }
+  .hor-card :global(.hor-card__mark .logo__mark) { height: 84px; }
+  .hor-card__name { margin-top: var(--sp-3); font-family: var(--font-display); font-size: 2.25rem; line-height: 1; }
+  .hor-card__line { font-size: 2rem; color: var(--c-green-dark); line-height: 1.2; }
+  .hor-two { display: grid; gap: var(--sp-12); }
+  .hor-two > div { display: grid; gap: var(--sp-4); align-content: start; justify-items: start; }
+  .section :global(.hor-menu__intro) { margin-block: var(--sp-4) var(--sp-8); }
+  .hor-menu { display: grid; gap: var(--sp-5); }
+  .hor-menu__card { display: grid; gap: var(--sp-3); align-content: start; padding: var(--sp-6); background: var(--c-offwhite); border: var(--border-card); border-radius: var(--radius-card); }
+  .hor-menu__card h3 { font-size: var(--fs-h3); }
+  .hor-stay { display: grid; justify-items: center; gap: var(--sp-4); text-align: center; }
+  @media (min-width: 900px) {
+    .hor-intro { grid-template-columns: 1fr auto; gap: var(--sp-16); }
+    .hor-intro__accent { margin-right: var(--sp-10); }
+    /* full width with a narrow gap, as in the Horeca mockup */
+    .hor-offer { overflow-x: clip; }
+    .hor-photos { grid-template-columns: 231fr 273fr; gap: var(--sp-2); margin-inline: calc(50% - 50vw); }
+    .hor-photos :global(img) { border-radius: 0; box-shadow: none; aspect-ratio: auto; height: 100%; }
+    .hor-who { grid-template-columns: 1.6fr 1fr; gap: var(--sp-16); }
+    .hor-who__list { grid-template-columns: 1fr 1fr; }
+    .hor-two { grid-template-columns: 1fr 1fr; gap: var(--sp-16); }
+    .hor-menu { grid-template-columns: 1fr 1fr; }
+  }
+</style>

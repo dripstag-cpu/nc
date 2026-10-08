@@ -1,0 +1,7 @@
+---
+// /camperplaats/: accommodation detail page for the camper places (see AccommodationPage.astro)
+import AccommodationPage from '../components/AccommodationPage.astro';
+import { accommodationBySlug } from '../data/site';
+---
+
+<AccommodationPage acc={accommodationBySlug('camperplaats')!} />

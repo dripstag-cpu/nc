@@ -1,0 +1,86 @@
+---
+// Green USP band from the homepage mockup (ref-04): leaf sprig with the handwritten line and one
+// sentence, then four USPs with a line icon left of two lines of text, thin olive dividers.
+// The facts from the copy (no reviews yet) follow in a light strip within the same section.
+import Icon, { type IconName } from './Icon.astro';
+import RichText from './RichText.astro';
+import type { Block } from '../lib/copy';
+
+interface Props {
+  accent: string;
+  sentence: string;
+  items: { icon: IconName; text: string }[];
+  /** heading for the section (visually hidden) */
+  title: string;
+  facts?: Block[];
+  intro?: Block[];
+}
+const { accent, sentence, items, title, facts = [], intro = [] } = Astro.props;
+---
+
+<section class="usp" aria-labelledby="usp-title">
+  <h2 id="usp-title" class="visually-hidden">{title}</h2>
+  <div class="usp__band bg-dark">
+    <div class="container usp__row">
+      <div class="usp__lead">
+        <Icon name="leafsprig" size={46} class="usp__lead-icon" />
+        <div>
+          <p class="accent usp__accent">{accent}</p>
+          <p class="usp__sentence">{sentence}</p>
+        </div>
+      </div>
+      <ul role="list" class="usp__list">
+        {items.map((u) => <li><Icon name={u.icon} size={34} /><span>{u.text}</span></li>)}
+      </ul>
+    </div>
+  </div>
+  {facts.length > 0 && (
+    <div class="usp__facts bg-paper">
+      <div class="container usp__facts-inner reveal">
+        {intro.length > 0 && <RichText blocks={intro} class="usp__facts-intro" />}
+        <RichText blocks={facts} class="usp__facts-list" />
+      </div>
+    </div>
+  )}
+</section>
+
+<style>
+  .usp__band { padding-block: var(--sp-8); }
+  .usp__row { display: grid; gap: var(--sp-6); align-items: center; }
+  .usp__lead { display: flex; gap: var(--sp-4); align-items: center; }
+  .usp :global(.usp__lead-icon) { color: var(--c-cream); flex: none; }
+  .usp__accent { font-size: 1.875rem; line-height: 1.1; color: var(--c-offwhite); transform: rotate(-2deg); transform-origin: left; }
+  .usp__sentence { margin-top: var(--sp-1); font-size: 0.875rem; line-height: 1.5; color: var(--c-cream); max-width: 32ch; }
+  .usp__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-5) var(--sp-4); }
+  .usp__list li { display: flex; align-items: center; gap: var(--sp-3); font-size: 0.875rem; line-height: 1.45; color: var(--c-offwhite); }
+  .usp__list :global(svg) { flex: none; color: var(--c-cream); }
+  .usp__facts { padding-block: var(--sp-8); border-bottom: 1px solid rgba(34, 66, 43, 0.1); }
+  .usp__facts-inner { display: grid; gap: var(--sp-3); font-size: 0.9375rem; }
+  .usp :global(.usp__facts-intro) { max-width: none; font-weight: 700; }
+  .usp :global(.usp__facts-list) { max-width: none; }
+  .usp :global(.usp__facts-list ul) { display: grid; gap: var(--sp-2) var(--sp-8); padding-left: 0; list-style: none; }
+  .usp :global(.usp__facts-list li) { position: relative; padding-left: 1.6em; }
+  .usp :global(.usp__facts-list li)::before {
+    content: '';
+    position: absolute;
+    left: 0.15em;
+    top: 0.42em;
+    width: 0.7em;
+    height: 0.4em;
+    border-left: 1.5px solid var(--c-green-olive);
+    border-bottom: 1.5px solid var(--c-green-olive);
+    transform: rotate(-45deg);
+  }
+  @media (min-width: 700px) {
+    .usp :global(.usp__facts-list ul) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1000px) {
+    .usp__band { padding-block: var(--sp-5); }
+    .usp__row { grid-template-columns: auto 1fr; gap: 0; }
+    .usp__lead { padding-right: var(--sp-8); }
+    .usp__list { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+    .usp__list li { justify-content: center; padding: var(--sp-2) var(--sp-4); border-left: 1px solid rgba(125, 151, 113, 0.55); }
+    .usp__facts-inner { grid-template-columns: 16rem 1fr; align-items: start; }
+    .usp :global(.usp__facts-list ul) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+</style>

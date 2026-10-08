@@ -1,0 +1,66 @@
+---
+// Accommodation gallery (briefing chapter 8): only real photos, one large and up to two smaller
+// beside it; the shots that are still missing (the briefing asks for six) are one line with a chip
+// below it, never empty tiles. Swipe (scroll-snap) on mobile. First image eager: the LCP element here.
+import { Picture } from 'astro:assets';
+import type { Img } from '../data/images';
+import Placeholder from './Placeholder.astro';
+
+interface Props {
+  images: Img[];
+  /** wanted shots from the copy (alt lines); only their number is used for the chip */
+  wanted?: string[];
+  min?: number;
+}
+const { images, wanted = [], min = 6 } = Astro.props;
+const shown = images.slice(0, 3);
+const missing = Math.max(min - shown.length, wanted.length - shown.length, 0);
+---
+
+<div class:list={['gallery', `gallery--${shown.length}`]} role="region" aria-label="Foto's" tabindex="0">
+  {shown.map((im, i) => (
+    <figure class:list={['gallery__item', { 'gallery__item--main': i === 0 }]}>
+      <Picture
+        src={im.src}
+        alt={im.alt}
+        formats={['avif', 'webp']}
+        widths={[480, 800, 1200, 1600].filter((w) => w <= im.src.width)}
+        sizes={i === 0 ? '(min-width: 900px) 880px, 90vw' : '(min-width: 900px) 440px, 90vw'}
+        loading={i === 0 ? 'eager' : 'lazy'}
+        fetchpriority={i === 0 ? 'high' : undefined}
+        decoding="async"
+      />
+    </figure>
+  ))}
+</div>
+{missing > 0 && (
+  <p class="gallery__more"><Placeholder prefix="Nog aan te leveren" text={`${missing} foto's van dit verblijf`} /></p>
+)}
+
+<style>
+  .gallery {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 85%;
+    gap: var(--sp-3);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    padding-bottom: var(--sp-2);
+  }
+  .gallery--1 { grid-auto-columns: 100%; }
+  .gallery:focus-visible { outline: var(--focus-ring); outline-offset: 4px; }
+  .gallery__item { scroll-snap-align: start; margin: 0; aspect-ratio: 4 / 3; border-radius: var(--radius-card); overflow: hidden; box-shadow: var(--shadow-card); }
+  .gallery__item :global(picture) { display: block; height: 100%; }
+  .gallery__item :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .gallery__more { margin-top: var(--sp-3); }
+  @media (min-width: 900px) {
+    .gallery { grid-auto-flow: row; overflow: visible; height: clamp(380px, 34vw, 520px); grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+    .gallery__item { aspect-ratio: auto; }
+    .gallery__item--main { grid-row: span 2; }
+    .gallery--1 { grid-template-columns: 1fr; grid-template-rows: 1fr; height: clamp(340px, 30vw, 460px); }
+    .gallery--1 .gallery__item--main { grid-row: auto; }
+    .gallery--2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+    .gallery--2 .gallery__item--main { grid-row: auto; }
+  }
+</style>

@@ -1,0 +1,120 @@
+---
+// /verblijf/: overview after the Verblijf mockups (pages 9 and 11), copy from verblijf.md.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import StayCard from '../../components/StayCard.astro';
+import RichText from '../../components/RichText.astro';
+import Icon from '../../components/Icon.astro';
+import ReserveBlock from '../../components/ReserveBlock.astro';
+import Placeholder from '../../components/Placeholder.astro';
+import { breadcrumbs } from '../../data/jsonld';
+import { img, cardImage } from '../../data/images';
+import { accommodations } from '../../data/site';
+import { pageCopy } from '../../lib/page-copy';
+import { parseInline, section, toPlain } from '../../lib/copy';
+import { need } from '../../lib/sections';
+
+const copy = await pageCopy('verblijf');
+const intro = need(section(copy, 'Intro'), 'Intro');
+const cards = need(section(copy, 'Verblijfskaarten'), 'Verblijfskaarten');
+const help = need(section(copy, 'Hulp bij kiezen'), 'Hulp bij kiezen');
+
+// decisions.md order, text from the copy card with the same title
+const list = accommodations.map((a) => ({ acc: a, item: cards.items.find((i) => i.title === a.name) }));
+---
+
+<BaseLayout
+  title={copy.meta.title}
+  description={copy.meta.description}
+  jsonLd={breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Verblijf', path: copy.meta.slug }])}
+>
+  <PageHero title={copy.meta.h1} sub={toPlain(intro.blocks.slice(0, 1))} image={img.luchtfoto} accent={'Ruimte om\ntot rust te komen'} />
+
+  <section class="section bg-offwhite" aria-labelledby="kies-title">
+    <div class="container">
+      <div class="stay-head reveal">
+        <h2 id="kies-title">Kies jouw verblijf</h2>
+        <RichText blocks={intro.blocks.slice(1)} class="lead" />
+      </div>
+      <ul role="list" class="stay-grid">
+        {list.map(({ acc, item }) => (
+          <li>
+            <StayCard
+              title={acc.name}
+              href={acc.href}
+              image={cardImage[acc.slug]}
+              alt={item?.alts[0]}
+              icon={acc.icon}
+              facts={[
+                { icon: 'person', text: `Tot ${acc.maxPersons} personen` },
+                ...(acc.count ? [{ icon: 'home' as const, text: `${acc.count} ${acc.count === 1 ? 'plaats' : acc.slug === 'glampingtent' ? 'tenten' : 'plaatsen'}` }] : []),
+                ...(acc.sanitary ? [{ icon: 'shower' as const, text: acc.sanitary }] : []),
+              ]}
+              blocks={item?.blocks ?? []}
+            />
+          </li>
+        ))}
+      </ul>
+      <p class="stay-note">Prijzen zijn per nacht. Toeristenbelasting: <Placeholder text="bedrag per persoon per nacht" /></p>
+    </div>
+  </section>
+
+  <section class="bg-offwhite stay-practical" aria-labelledby="praktisch-title">
+    <div class="container reveal">
+      <h2 id="praktisch-title" class="visually-hidden">Praktisch</h2>
+      <ul role="list" class="stay-facts">
+        {[
+          { icon: 'clock' as const, title: 'In- en uitchecken', text: '[[NOG IN TE VULLEN: aankomst- en vertrektijden]]' },
+          { icon: 'paw' as const, title: 'Huisdieren', text: '[[NOG IN TE VULLEN: huisdierenbeleid]]' },
+          { icon: 'wifi' as const, title: 'Wifi', text: '[[NOG IN TE VULLEN: wifi op het terrein]]' },
+          { icon: 'person' as const, title: 'Persoonlijke service', text: 'Kleinschalig en persoonlijk.' },
+        ].map((f) => (
+          <li>
+            <span class="stay-facts__icon"><Icon name={f.icon} size={30} /></span>
+            <div>
+              <h3>{f.title}</h3>
+              <p><RichText inline={parseInline(f.text)} /></p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section bg-offwhite" aria-label="Reserveren">
+    <div class="container reveal">
+      <ReserveBlock title="Reserveren" image={img.waterBrug} />
+      <div class="stay-help">
+        <h2 class="visually-hidden">{help.name}</h2>
+        <RichText blocks={help.blocks} />
+        {help.buttons[0] && <a class="btn btn--secondary" href="/tarieven/">{help.buttons[0].label}</a>}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .stay-head { display: grid; gap: var(--sp-3); margin-bottom: var(--sp-8); max-width: 46rem; }
+  .stay-grid { display: grid; gap: var(--sp-6) var(--sp-5); }
+  .stay-grid > li { display: flex; }
+  .stay-grid > li > :global(*) { flex: 1; }
+  .stay-note { margin-top: var(--sp-6); font-size: 0.875rem; text-align: center; }
+  .stay-practical { padding-bottom: var(--sp-10); }
+  .stay-facts { display: grid; gap: var(--sp-3); }
+  .stay-facts li { display: flex; gap: var(--sp-4); align-items: center; padding: var(--sp-4) var(--sp-5); background: var(--c-paper) var(--grain); border: var(--border-card); border-radius: var(--radius-card); }
+  .stay-facts__icon { display: grid; place-items: center; flex: none; width: 52px; height: 52px; border: 1px solid rgba(85, 109, 61, 0.45); border-radius: 50%; color: var(--c-green-dark); background: var(--c-offwhite); }
+  .stay-facts h3 { font-family: var(--font-body); font-size: 0.9375rem; font-weight: 700; line-height: 1.3; }
+  .stay-facts p { font-size: 0.875rem; line-height: 1.45; }
+  .stay-help { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-4); margin-top: var(--sp-10); }
+  @media (min-width: 700px) {
+    .stay-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .stay-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1000px) {
+    .stay-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    /* five cards: a row of three and a row of two of the same width, centred */
+    .stay-grid > li { grid-column: span 2; }
+    .stay-grid > li:nth-child(4) { grid-column: 2 / span 2; }
+    .stay-facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+</style>

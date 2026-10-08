@@ -1,0 +1,87 @@
+---
+// Contact form (demo): plain HTML form with a honeypot field. There is no endpoint yet, so
+// submitting shows a calm message on the page instead of sending. Without JS it reloads the page
+// with ?verzonden=1, which shows the same message. The fields deliberately have no `name` yet, so
+// nothing personal ends up in the URL; add names (naam, email, bericht, website) together with
+// the real endpoint and method="post".
+interface Props {
+  button?: string;
+}
+const { button = 'Verstuur bericht' } = Astro.props;
+---
+
+<form class="contact-form" method="get" action="/contact/#bericht" data-contact-form novalidate>
+  <input type="hidden" name="verzonden" value="1" />
+  <div class="contact-form__field">
+    <label for="cf-name">Naam</label>
+    <input id="cf-name" type="text" autocomplete="name" required />
+  </div>
+  <div class="contact-form__field">
+    <label for="cf-email">E-mail</label>
+    <input id="cf-email" type="email" autocomplete="email" required />
+  </div>
+  <div class="contact-form__field">
+    <label for="cf-message">Bericht</label>
+    <textarea id="cf-message" rows="6" required></textarea>
+  </div>
+  <!-- honeypot: hidden from people, bots fill it in -->
+  <div class="contact-form__hp" aria-hidden="true">
+    <label for="cf-website">Laat dit veld leeg</label>
+    <input id="cf-website" type="text" tabindex="-1" autocomplete="off" />
+  </div>
+  <button class="btn btn--primary" type="submit">{button}</button>
+  <p class="contact-form__status" role="status" aria-live="polite" tabindex="-1" data-contact-status hidden>
+    Dank je wel. Dit is een demo: je bericht is niet verstuurd. Zodra de site live gaat, komt het hier direct bij ons binnen.
+  </p>
+</form>
+
+<style>
+  .contact-form { display: grid; gap: var(--sp-5); }
+  .contact-form__field { display: grid; gap: var(--sp-1); }
+  .contact-form label { font-weight: 700; font-size: 0.9375rem; }
+  .contact-form input, .contact-form textarea {
+    width: 100%;
+    min-height: var(--btn-h);
+    padding: var(--sp-3);
+    border: 1px solid var(--c-green-olive);
+    border-radius: var(--radius-btn);
+    background: var(--c-offwhite);
+    color: var(--c-green-dark);
+  }
+  .contact-form textarea { min-height: 9rem; resize: vertical; }
+  .contact-form .btn { justify-self: start; }
+  .contact-form__hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .contact-form__status {
+    padding: var(--sp-4);
+    border-left: 3px solid var(--c-green-olive);
+    background: var(--c-offwhite);
+  }
+  .contact-form [aria-invalid='true'] { border-color: #8a2b1f; }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+  const status = document.querySelector<HTMLElement>('[data-contact-status]');
+  if (form && status) {
+    if (new URLSearchParams(location.search).has('verzonden')) status.hidden = false;
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const fields = Array.from(form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[required]'));
+      let first: HTMLElement | null = null;
+      fields.forEach((f) => {
+        const ok = f.checkValidity() && f.value.trim() !== '';
+        f.setAttribute('aria-invalid', String(!ok));
+        if (!ok && !first) first = f;
+      });
+      if (first) {
+        (first as HTMLElement).focus();
+        form.reportValidity();
+        return;
+      }
+      // honeypot filled: spam; it gets the same message and nothing would be sent
+      form.reset();
+      status.hidden = false;
+      status.focus();
+    });
+  }
+</script>

@@ -1,0 +1,35 @@
+---
+// Renders parsed copy (src/lib/copy.ts): blocks, or a single inline run.
+// Placeholders become <Placeholder />.
+import type { Block, Inline } from '../lib/copy';
+import Placeholder from './Placeholder.astro';
+
+interface Props {
+  blocks?: Block[];
+  inline?: Inline[];
+  class?: string;
+}
+const { blocks, inline, class: cls } = Astro.props;
+---
+
+{inline && inline.map((n) => (
+  n.type === 'placeholder' ? <Placeholder text={n.value} />
+  : n.type === 'strong' ? <strong>{n.value}</strong>
+  : n.type === 'em' ? <em>{n.value}</em>
+  : n.type === 'link' ? <a href={n.href}>{n.value}</a>
+  : n.type === 'break' ? <br />
+  : <Fragment>{n.value}</Fragment>
+))}
+{blocks && (
+  <div class:list={['prose', cls]}>
+    {blocks.map((b) =>
+      b.type === 'paragraph' ? (
+        <p><Astro.self inline={b.content} /></p>
+      ) : b.ordered ? (
+        <ol>{b.items.map((i) => <li><Astro.self inline={i} /></li>)}</ol>
+      ) : (
+        <ul>{b.items.map((i) => <li><Astro.self inline={i} /></li>)}</ul>
+      )
+    )}
+  </div>
+)}

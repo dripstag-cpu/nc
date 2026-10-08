@@ -1,0 +1,40 @@
+---
+// 404: calm error page (noindex). Copy from 404.md.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import RichText from '../components/RichText.astro';
+import { pageCopy } from '../lib/page-copy';
+import { section, toPlain } from '../lib/copy';
+
+const copy = await pageCopy('404');
+const message = section(copy, 'Melding');
+const where = section(copy, 'Waar wil je heen');
+// the list items are link labels in the copy; map them to routes
+const routes: Record<string, string> = {
+  'Naar de homepage': '/',
+  'Naar de verblijven': '/verblijf/',
+  'Naar contact': '/contact/',
+};
+const items = (where?.blocks ?? []).flatMap((b) => (b.type === 'list' ? b.items : [])).map((i) => toPlain(i));
+---
+
+<BaseLayout title={copy.meta.title} description={copy.meta.description} noindex path="/404/">
+  <PageHeader title={copy.meta.h1}>
+    {message && <RichText blocks={message.blocks} />}
+  </PageHeader>
+  <section class="section bg-offwhite">
+    <div class="container">
+      {where && <h2 class="nf-title">{where.name}</h2>}
+      <ul role="list" class="nf-links">
+        {items.map((label) => routes[label] && <li><a href={routes[label]}>{label}</a></li>)}
+      </ul>
+      <a class="btn btn--primary" href="/">{where?.buttons[0]?.label ?? 'Naar de homepage'}</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf-title { margin-bottom: var(--sp-4); font-size: var(--fs-h3); }
+  .nf-links { display: grid; gap: var(--sp-2); margin-bottom: var(--sp-8); }
+  .nf-links a { display: inline-flex; min-height: 44px; align-items: center; font-weight: 700; }
+</style>

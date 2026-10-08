@@ -1,0 +1,34 @@
+---
+// /reserveren/: Tommy reservation flow (noindex, not in the sitemap). Copy from reserveren.md.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import RichText from '../components/RichText.astro';
+import TommyReservation from '../components/booking/TommyReservation.astro';
+import { breadcrumbs } from '../data/jsonld';
+import { pageCopy } from '../lib/page-copy';
+import { section } from '../lib/copy';
+
+const copy = await pageCopy('reserveren');
+const intro = section(copy, 'Intro');
+---
+
+<BaseLayout
+  title={copy.meta.title}
+  description={copy.meta.description}
+  noindex
+  jsonLd={breadcrumbs([{ name: 'Home', path: '/' }, { name: copy.meta.h1, path: copy.meta.slug }])}
+>
+  <PageHeader title={copy.meta.h1}>
+    {intro && <RichText blocks={intro.blocks} />}
+  </PageHeader>
+  <section class="section bg-offwhite booking">
+    <div class="container">
+      <h2 class="visually-hidden">Je reservering</h2>
+      <TommyReservation />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .booking { padding-top: var(--sp-10); }
+</style>

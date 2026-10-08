@@ -1,0 +1,120 @@
+---
+// /faciliteiten/: icon grid, one card per facility (decisions.md v2). Copy from faciliteiten.md.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import RichText from '../components/RichText.astro';
+import Icon from '../components/Icon.astro';
+import Placeholder from '../components/Placeholder.astro';
+import Figure from '../components/Figure.astro';
+import { img } from '../data/images';
+import { breadcrumbs } from '../data/jsonld';
+import { pageCopy } from '../lib/page-copy';
+import { section, toPlain } from '../lib/copy';
+import type { IconName } from '../components/icon-names';
+
+const copy = await pageCopy('faciliteiten');
+const intro = section(copy, 'Intro');
+const book = section(copy, 'Boek je verblijf');
+const items = copy.sections.filter((s) => s !== intro && s !== book);
+const icons: Record<string, IconName> = {
+  sanitair: 'shower',
+  'prive-sanitair': 'shower',
+  stroom: 'plug',
+  'water-en-lozen-voor-campers': 'water',
+  wifi: 'wifi',
+  fietsenstalling: 'bike',
+  'oplaadpunt-e-bike': 'plug',
+  wasruimte: 'wash',
+  afval: 'trash',
+  'horeca-op-het-terrein': 'coffee',
+};
+// a tick only where the copy states the facility; the rest still has to be confirmed by the owner
+const confirmed = (blocks: (typeof items)[number]['blocks']) => toPlain(blocks).trim().length > 0;
+const buttonHref: Record<string, string> = {
+  'prive-sanitair': '/verblijf/',
+  'horeca-op-het-terrein': '/horeca/',
+};
+---
+
+<BaseLayout
+  title={copy.meta.title}
+  description={copy.meta.description}
+  jsonLd={breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Faciliteiten', path: copy.meta.slug }])}
+>
+  <PageHeader title={copy.meta.h1} accent={'Alles voor een comfortabel\nen ontspannen verblijf'} />
+
+  <section class="section bg-offwhite" aria-labelledby="overview-title">
+    <div class="container fac-top reveal">
+      <div>
+        <h2 id="overview-title" class="fac-h2">In het kort</h2>
+        {intro && <RichText blocks={intro.blocks} />}
+        <ul role="list" class="fac-checks">
+          {items.map((s) => (
+            <li>
+              {confirmed(s.blocks) ? <Icon name="check" size={20} class="fac-checks__yes" /> : <span class="fac-checks__open" aria-hidden="true"></span>}
+              <a href={`#${s.id}`}>{s.name}</a>
+              {!confirmed(s.blocks) && <Placeholder text="bevestigen" />}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <Figure image={img.toegangsbord.src} alt={img.toegangsbord.alt} ratio="4 / 3" widths={[480, 800, 1200]} sizes="(min-width: 900px) 560px, 100vw" />
+    </div>
+  </section>
+
+  <section class="section bg-paper">
+    <div class="container">
+      <h2 class="fac-h2">Alle faciliteiten</h2>
+      <ul role="list" class="fac-grid">
+        {items.map((s) => (
+          <li class="fac-card reveal" id={s.id}>
+            <span class="fac-card__icon"><Icon name={icons[s.id] ?? 'check'} size={30} /></span>
+            <h3>{s.name}</h3>
+            <RichText blocks={s.blocks} />
+            {s.buttons[0] && buttonHref[s.id] && <a class="fac-card__link" href={buttonHref[s.id]}>{s.buttons[0].label}<Icon name="chevron" size={14} /></a>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {book && (
+    <section class="section bg-dark" aria-labelledby="book-title">
+      <div class="container fac-book">
+        <h2 id="book-title">{book.name}</h2>
+        <a class="btn btn--light" href="/beschikbaarheid/">{book.buttons[0]?.label ?? 'Bekijk beschikbaarheid'}</a>
+      </div>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .fac-h2 { margin-bottom: var(--sp-4); font-size: clamp(1.75rem, 1vw + 1.4rem, 2.25rem); }
+  .fac-top { display: grid; gap: var(--sp-8); align-items: center; }
+  .fac-checks { display: grid; gap: var(--sp-3) var(--sp-6); margin-top: var(--sp-6); }
+  .fac-checks li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); font-size: 1rem; }
+  .fac-checks a { text-decoration: none; }
+  .fac-checks a:hover { text-decoration: underline; }
+  .fac-checks :global(.fac-checks__yes) { flex: none; color: var(--c-green-olive); }
+  .fac-checks__open { flex: none; width: 20px; height: 20px; border: 1px dashed rgba(85, 109, 61, 0.7); border-radius: 50%; }
+  .fac-top :global(.fac-photo) { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius-card); box-shadow: var(--shadow-card); }
+  .fac-grid { display: grid; gap: var(--sp-5); }
+  .fac-card { display: grid; gap: var(--sp-3); align-content: start; padding: var(--sp-6); background: var(--c-offwhite); border: var(--border-card); border-radius: var(--radius-card); scroll-margin-top: calc(var(--header-h) + 1rem); }
+  .fac-card__icon { display: grid; place-items: center; width: 56px; height: 56px; border: 1px solid rgba(85, 109, 61, 0.45); border-radius: 50%; color: var(--c-green-dark); }
+  .fac-card h3 { font-size: var(--fs-h3); }
+  .fac-card :global(.prose) { font-size: 0.9375rem; }
+  .fac-card__link { display: inline-flex; gap: var(--sp-2); min-height: 44px; align-items: center; font-weight: 700; font-size: 0.9375rem; }
+  .fac-book { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-4); }
+  @media (min-width: 600px) {
+    .fac-checks { grid-template-columns: 1fr 1fr; }
+  }
+  @media (min-width: 700px) {
+    .fac-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 900px) {
+    .fac-top { grid-template-columns: 1.1fr 1fr; gap: var(--sp-16); }
+  }
+  @media (min-width: 1000px) {
+    .fac-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+</style>

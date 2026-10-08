@@ -1,0 +1,120 @@
+---
+// Homepage hero after the mockup (ref-04): photo, ornament, H1 on two lines, ornament, sub line,
+// two buttons (filled booking button with a calendar icon and no extra border, outlined second button). Gradient from the left.
+// The image is the LCP element: eager + fetchpriority high, no CSS filter on it.
+import { getImage } from 'astro:assets';
+import Ornament from './Ornament.astro';
+import Icon from './Icon.astro';
+import type { Img } from '../data/images';
+
+interface Cta {
+  label: string;
+  href: string;
+}
+interface Props {
+  /** "\n" marks the line break of the title */
+  title: string;
+  sub?: string;
+  image: Img;
+  /** portrait crop for phones (art direction); the wide photo is otherwise mostly cut off */
+  mobileImage?: Img;
+  primary: Cta;
+  secondary?: Cta;
+}
+const { title, sub, image, mobileImage, primary, secondary } = Astro.props;
+const lines = title.split('\n');
+
+const DESK_SIZES = '(max-width: 1100px) 1400px, 2000px';
+const deskWidths = [960, 1400, 2000].filter((w) => w <= image.src.width);
+const desk = await Promise.all(
+  (['avif', 'webp'] as const).map((format) => getImage({ src: image.src, widths: deskWidths, sizes: DESK_SIZES, format })),
+);
+const fallback = await getImage({ src: image.src, width: Math.min(1400, image.src.width), format: 'jpg' });
+const mobWidths = mobileImage ? [480, 720].filter((w) => w <= mobileImage.src.width) : [];
+const mob = mobileImage
+  ? await Promise.all((['avif', 'webp'] as const).map((format) => getImage({ src: mobileImage.src, widths: mobWidths, sizes: '100vw', format })))
+  : [];
+---
+
+<section class="hero" data-hero aria-labelledby="hero-title">
+  <picture>
+    {mob.map((m) => <source media="(max-width: 699px)" type={`image/${m.options.format}`} srcset={m.srcSet.attribute} sizes="100vw" />)}
+    {desk.map((d) => <source type={`image/${d.options.format}`} srcset={d.srcSet.attribute} sizes={DESK_SIZES} />)}
+    <img
+      class="hero__img"
+      src={fallback.src}
+      alt={image.alt}
+      width={fallback.attributes.width}
+      height={fallback.attributes.height}
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+    />
+  </picture>
+  <div class="hero__shade" aria-hidden="true"></div>
+  <div class="container hero__content on-dark">
+    <div class="hero__text">
+      <Ornament class="hero__ornament" line={108} />
+      <h1 id="hero-title" class="hero__title">
+        {lines.map((l, i) => <Fragment>{i > 0 && <br />}{l}</Fragment>)}
+      </h1>
+      <Ornament class="hero__ornament" line={108} />
+      {sub && <p class="hero__sub">{sub}</p>}
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href={primary.href}><Icon name="calendar" size={19} />{primary.label}</a>
+        {secondary && <a class="btn btn--ghost-light" href={secondary.href}>{secondary.label}</a>}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    min-height: 75svh;
+    overflow: hidden;
+    background: var(--c-green-dark);
+    color: var(--c-offwhite);
+  }
+  .hero :global(picture) { position: absolute; inset: 0; }
+  .hero :global(.hero__img) { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; }
+  /* phones: dark green from below, the text sits at the bottom */
+  .hero__shade {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to top, rgba(26, 50, 33, 0.94) 0%, rgba(26, 50, 33, 0.72) 42%, rgba(26, 50, 33, 0.12) 72%, rgba(26, 50, 33, 0) 100%);
+  }
+  .hero__content { position: relative; padding-block: var(--sp-24) var(--sp-10); }
+  .hero__text { max-width: 34rem; }
+  .hero :global(.hero__ornament) { color: var(--c-offwhite); }
+  .hero :global(.hero__ornament .ornament__line) { opacity: 0.7; }
+  .hero__title { margin-block: var(--sp-3) var(--sp-2); color: var(--c-offwhite); font-weight: 500; line-height: 1.04; }
+  .hero__sub { max-width: 24em; margin-top: var(--sp-4); font-size: 1.125rem; line-height: 1.6; color: var(--c-offwhite); }
+  .hero__ctas { display: flex; flex-wrap: wrap; gap: var(--sp-3) var(--sp-4); margin-top: var(--sp-8); }
+  .hero__ctas .btn { flex: 1 1 14rem; }
+  /* the primary button stays as in the mockup: flat dark green, no extra border, soft shadow */
+  .hero__ctas .btn--primary { border-color: var(--c-green-dark); box-shadow: 0 2px 10px rgba(10, 24, 14, 0.35); }
+
+  @media (min-width: 700px) {
+    .hero__ctas .btn { flex: 0 0 auto; }
+  }
+  @media (min-width: 900px) {
+    /* wide band as in the mockup, text column of about 40 percent on the left */
+    /* the mockup hero is low (1536 x 333): about 30vw, with room for the text */
+    .hero { min-height: clamp(430px, 30vw, 500px); align-items: center; }
+    /* the photo is the clean part right of the text in the mockup (from x 535 of 1536): it starts
+       at 34 percent, the text sits on dark green with a gradient into the photo */
+    .hero :global(picture) { left: 34%; }
+    .hero :global(.hero__img) { object-position: 50% 50%; }
+    .hero__shade {
+      background: linear-gradient(to right, #1d3a25 0%, #1d3a25 34%, rgba(29, 58, 37, 0.8) 40%, rgba(29, 58, 37, 0.25) 52%, rgba(29, 58, 37, 0) 62%);
+    }
+    .hero__content { padding-block: var(--sp-10); }
+    .hero__title { font-size: clamp(2.75rem, 2vw + 1.9rem, 3.5rem); }
+    .hero__text { max-width: 31rem; }
+    .hero__ctas { flex-wrap: nowrap; }
+  }
+</style>

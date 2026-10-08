@@ -1,0 +1,47 @@
+---
+// Light page header after the Verblijf mockup (p09, ref-06): light cream band with the H1 in Cormorant,
+// an intro line, the handwritten accent line with ornament on the right and a soft leafy watermark.
+// For pages without a photo hero: contact, tarieven, faciliteiten, FAQ, legal, booking pages.
+import Botanical from './Botanical.astro';
+import Ornament from './Ornament.astro';
+
+interface Props {
+  title: string;
+  accent?: string;
+}
+const { title, accent } = Astro.props;
+---
+
+<section class="page-header bg-paper" aria-labelledby="page-title">
+  <Botanical class="page-header__plant" variant="branch" width={230} />
+  <Botanical class="page-header__plant page-header__plant--left" variant="branch" width={200} flip />
+  <div class="container page-header__inner">
+    <div class="page-header__text">
+      <h1 id="page-title">{title}</h1>
+      <div class="page-header__intro"><slot /></div>
+    </div>
+    {accent && (
+      <p class="accent page-header__accent">
+        <span class="page-header__accent-text">{accent.split('\n').map((l, i) => <Fragment>{i > 0 && <br />}{l}</Fragment>)}</span>
+        <Ornament line={30} />
+      </p>
+    )}
+  </div>
+</section>
+
+<style>
+  .page-header { position: relative; overflow: hidden; padding-block: var(--sp-10) var(--sp-10); border-bottom: 1px solid rgba(34, 66, 43, 0.08); }
+  .page-header :global(.page-header__plant) { position: absolute; right: 6%; top: -30px; opacity: 0.09; }
+  .page-header :global(.page-header__plant--left) { right: auto; left: 34%; top: auto; bottom: -110px; opacity: 0.06; }
+  .page-header__inner { position: relative; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--sp-6); }
+  .page-header__text { max-width: 44rem; }
+  .page-header h1 { font-size: clamp(2.5rem, 1.8vw + 2rem, 3.5rem); font-weight: 500; line-height: 1.05; }
+  .page-header__intro:not(:empty) { margin-top: var(--sp-3); }
+  .page-header__intro :global(p) { font-size: 1.0625rem; }
+  .page-header__accent { display: grid; justify-items: center; gap: var(--sp-3); text-align: center; }
+  .page-header__accent-text { display: block; transform: rotate(-5deg); line-height: 1.2; }
+  @media (min-width: 900px) {
+    .page-header { padding-block: var(--sp-12); }
+    .page-header__accent { margin-right: var(--sp-10); }
+  }
+</style>

@@ -1,0 +1,28 @@
+---
+// Flat pictograms from the entrance sign (ref-02-logo-op-bord): trekkershut, camper, glampingtent,
+// caravan, caravan with private shower cabin. Filled with currentColor (offwhite on the dark
+// green badge, as on the sign). Origin and use: ICONEN.md.
+import type { PictogramName } from './icon-names';
+
+interface Props {
+  name: PictogramName;
+  size?: number;
+  class?: string;
+}
+const { name, size = 28, class: cls } = Astro.props;
+
+const paths: Record<PictogramName, string> = {
+  cabin:
+    '<path d="M16 2.6L4.6 10.4h2.2L16 4.4l9.2 6h2.2z"/><path fill-rule="evenodd" d="M8 10.6l8-5.2 8 5.2v8.2H8zm6 2.6v5.6h4v-5.6zm-4.2.4v.9h2.6v-.9zm0 2.2v.9h2.6v-.9zm9.8-2.6v.9h2.6v-.9zm0 2.2v.9h2.6v-.9zM10 10.9v.7h12v-.7z"/><path d="M6.4 19.4h19.2v1.4H6.4zM8 20.8h1.4v2H8zm14.6 0H24v2h-1.4z"/>',
+  camper:
+    '<path fill-rule="evenodd" d="M2.6 15.6V7.4A1.8 1.8 0 0 1 4.4 5.6h17.4l4.6 5.4h1.3a1.6 1.6 0 0 1 1.6 1.6v3zM5.4 8v3.4h5V8zm6.6 0v3.4h5V8zm7.4 0v3.4h5.4L22 8z"/><circle cx="9" cy="18" r="2.4"/><circle cx="23" cy="18" r="2.4"/>',
+  tent:
+    '<path fill-rule="evenodd" d="M16 3.4l12.4 16.4H3.6zm0 7.4l-3.6 9h7.2z"/><path d="M15.4 1.6h1.2v2.6h-1.2zM2.2 19.8h27.6v1.3H2.2z"/><path d="M4 19.8L1.4 15.6M28 19.8l2.6-4.2" stroke="currentColor" stroke-width=".9" stroke-linecap="round"/>',
+  caravan:
+    '<path fill-rule="evenodd" d="M6.2 5.8h14.6a4 4 0 0 1 4 4v6.4H3.6V8.4a2.6 2.6 0 0 1 2.6-2.6zm.8 2.8v3.8h6.4V8.6zm9.4 0v7.6h3.6V8.6z"/><circle cx="12" cy="18.2" r="2.3"/><path d="M24.8 14.6h4.8v1.2h-4.8zM27.6 15.8h1.1v2.6h-1.1z"/>',
+  'caravan-shower':
+    '<path fill-rule="evenodd" d="M3.2 8h11a3 3 0 0 1 3 3v5.2H1.4v-6.4A1.8 1.8 0 0 1 3.2 8zm.6 2.2v3h4.6v-3zm6.8 0v6h2.8v-6z"/><circle cx="7.6" cy="18" r="1.9"/><path d="M17.2 14.8h1.8v1h-1.8z"/><path fill-rule="evenodd" d="M25.4 2.6l5.4 3.6v14.6H20V6.2zm-2.8 5.8v1.2h2.6v1.2a2.4 2.4 0 0 0-2.2 2.2h5.6a2.4 2.4 0 0 0-2.2-2.2V8.4zm.2 5.6v1h.9v-1zm2.2 0v1h.9v-1zm2.2 0v1h.9v-1zm-3.3 2v1h.9v-1zm2.2 0v1h.9v-1z"/>',
+};
+---
+
+<svg class={cls} width={size} height={Math.round((size * 24) / 32)} viewBox="0 0 32 24" fill="currentColor" aria-hidden="true" focusable="false" set:html={paths[name]} />

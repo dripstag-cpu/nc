@@ -1,0 +1,19 @@
+---
+// Tommy reservation flow for /reserveren/. Stays on our page through all steps.
+import TommyWidget from './TommyWidget.astro';
+---
+
+<TommyWidget
+  widget="reservation"
+  minHeight="800px"
+  attrs={{
+    'language-switching-enabled': 0,
+    'show-item-groups': 0,
+    'location-preference': 0,
+    'map-auto-zoom': 1,
+    'map-marker-size': 20,
+    arrangements: 1,
+    'price-triggers': 1,
+    'availability-calendar': 0,
+  }}
+/>

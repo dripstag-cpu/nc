@@ -1,0 +1,27 @@
+# build output
+dist/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+
+# environment variables
+.env
+.env.*
+
+# local test output and work files (not part of the site repo)
+.screens/
+GATES*.md
+
+# macOS
+.DS_Store
+
+# Vercel
+.vercel/
+
+# archived earlier versions (local history, not part of the site)
+_archief/

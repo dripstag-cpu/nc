@@ -1,0 +1,85 @@
+---
+// /tarieven/: Tommy matrix for all accommodations, then the text price table with placeholders.
+// Copy from tarieven.md.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import RichText from '../components/RichText.astro';
+import InOutList from '../components/InOutList.astro';
+import TommyMatrix from '../components/booking/TommyMatrix.astro';
+import { breadcrumbs } from '../data/jsonld';
+import { pageCopy } from '../lib/page-copy';
+import { section } from '../lib/copy';
+import { labeled, listItems, need, paragraphs } from '../lib/sections';
+
+const copy = await pageCopy('tarieven');
+const intro = section(copy, 'Intro');
+const live = need(section(copy, 'Prijzen en beschikbaarheid'), 'Prijzen en beschikbaarheid');
+const table = need(section(copy, 'Prijs per verblijfstype'), 'Prijs per verblijfstype');
+const incl = need(section(copy, 'Wat is inbegrepen'), 'Wat is inbegrepen');
+const extra = need(section(copy, 'Wat kost extra'), 'Wat kost extra');
+const cancel = section(copy, 'Annuleren');
+// "Regel bij de module" is the Tommy credit line, which TommyWidget already renders.
+const rows = listItems(table.blocks).map(labeled);
+---
+
+<BaseLayout
+  title={copy.meta.title}
+  description={copy.meta.description}
+  jsonLd={breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Tarieven', path: copy.meta.slug }])}
+>
+  <PageHeader title={copy.meta.h1}>
+    {intro && <RichText blocks={intro.blocks} />}
+  </PageHeader>
+
+  <section class="section bg-offwhite" id="beschikbaarheid" aria-labelledby="live-title">
+    <div class="container">
+      <div class="tar-live">
+        <h2 id="live-title">{live.name}</h2>
+        <RichText blocks={live.blocks} />
+        <a class="btn btn--secondary" href="/beschikbaarheid/">{live.buttons[0]?.label ?? 'Bekijk beschikbaarheid'}</a>
+      </div>
+      <TommyMatrix id="matrix" />
+    </div>
+  </section>
+
+  <section class="section bg-cream" aria-labelledby="table-title">
+    <div class="container reveal">
+      <h2 id="table-title" class="tar-h2">{table.name}</h2>
+      <div class="tar-table-wrap">
+        <table class="tar-table">
+          <thead><tr><th scope="col">Verblijf</th><th scope="col">Prijs per nacht</th></tr></thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr><th scope="row">{r.label}</th><td><RichText inline={r.value} /></td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <RichText blocks={paragraphs(table.blocks)} class="tar-note" />
+    </div>
+  </section>
+
+  <section class="section bg-offwhite" aria-label="Inbegrepen en extra kosten">
+    <div class="container reveal">
+      <InOutList yesTitle={incl.name} yes={listItems(incl.blocks)} noTitle={extra.name} no={listItems(extra.blocks)} />
+      {cancel && (
+        <div class="tar-cancel">
+          <h2>{cancel.name}</h2>
+          <RichText blocks={cancel.blocks} />
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .tar-h2 { margin-bottom: var(--sp-6); }
+  .tar-table-wrap { overflow-x: auto; }
+  .tar-table { width: 100%; max-width: 52rem; border-collapse: collapse; font-size: 1rem; }
+  .tar-table th, .tar-table td { padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--c-line); text-align: left; vertical-align: top; }
+  .tar-table thead th { font-size: 0.8125rem; letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+  .tar-table tbody th { font-weight: 700; }
+  .section :global(.tar-note) { margin-top: var(--sp-4); font-size: 0.9375rem; }
+  .tar-live { display: grid; gap: var(--sp-4); justify-items: start; max-width: 46rem; margin-bottom: var(--sp-8); }
+  .tar-cancel { display: grid; gap: var(--sp-3); margin-top: var(--sp-12); max-width: 46rem; }
+</style>

@@ -1,0 +1,45 @@
+---
+// Tommy search results ("zoek en boek") for /beschikbaarheid/.
+// Reads arrival-date, departure-date and age-category (JSON) from the URL. Without age-category
+// Tommy does not search, so plain params from the no-JS DateSearch (volwassenen, kinderen)
+// are converted first, before the deferred widget script runs.
+import TommyWidget from './TommyWidget.astro';
+import { AGE_CATEGORY } from '../../data/tommy';
+import { accommodations } from '../../data/site';
+
+const names = Object.fromEntries(accommodations.map((a) => [a.tommyId, a.name]));
+// ?verblijf=<id> (from the Reserveren block on a detail page): Tommy shows only that accommodation
+const filterNote = `(function(){var names=${JSON.stringify(names)};var q=new URLSearchParams(location.search);var v=q.get('verblijf');var n=document.querySelector('[data-filter-note]');if(!n||!names[v])return;n.querySelector('[data-filter-name]').textContent=names[v];q.delete('verblijf');n.querySelector('a').href=location.pathname+'?'+q.toString();n.hidden=false;})();`;
+
+const convert = `(function(){var u=new URL(location.href),q=u.searchParams;if(q.has('age-category')||!q.has('volwassenen'))return;var a=[{id:${AGE_CATEGORY.adults},pax:Math.max(1,parseInt(q.get('volwassenen'),10)||1)}];var k=parseInt(q.get('kinderen')||'0',10)||0;if(k>0)a.push({id:${AGE_CATEGORY.children},pax:k});q.delete('volwassenen');q.delete('kinderen');q.set('age-category',JSON.stringify(a));history.replaceState(null,'',u.pathname+'?'+q.toString());})();`;
+// With a search in the URL our own DateSearch block (above the widget) is the search form, so
+// Tommy's own filter bar (.t3-search-bar, Tommy's class names) is hidden. Without parameters the
+// widget is not shown or loaded at all (decision Bryan): the page shows only our block and the intro,
+// so the empty accommodation tiles ("Vul een aankomst- en vertrekdatum in") stay out of view.
+const flag = `(function(){var q=new URLSearchParams(location.search);if(q.get('arrival-date')&&q.get('departure-date')&&q.get('age-category'))document.documentElement.classList.add('has-search');})();`;
+const hideBar = `.has-search .t3-widget-searchbook .t3-search-bar{display:none!important}.has-search .t3-widget-searchbook>.t3-row:first-child{margin:0;padding:0}`;
+---
+
+<script is:inline set:html={convert}></script>
+<script is:inline set:html={flag}></script>
+<style is:inline set:html={hideBar}></style>
+<p class="filter-note" data-filter-note hidden>Je ziet alleen: <strong data-filter-name></strong>. <a href="/beschikbaarheid/">Toon alle verblijven</a></p>
+<script is:inline set:html={filterNote}></script>
+<TommyWidget
+  widget="searchpage"
+  accommodationFromUrl={accommodations.map((a) => a.tommyId)}
+  minHeight="720px"
+  testPriceNote
+  onlyWithSearch
+  attrs={{
+    'accommodation-group-filter': 0,
+    'amenity-filter': 0,
+    'format-information-link': 0,
+  }}
+/>
+
+<style>
+  .filter-note { margin-bottom: var(--sp-4); font-size: 1rem; }
+  .filter-note a { margin-left: 0.25em; font-weight: 700; }
+  :global(html:not(.has-search)) .filter-note { display: none; }
+</style>

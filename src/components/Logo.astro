@@ -1,0 +1,94 @@
+---
+// Temporary logo after the entrance sign and the brand board (ref-02, ref-03 concept 1, ref-08):
+// mark with a round tree crown and trunk, a winding path, water with reed, a small church tower
+// on the horizon and two birds; NAESCAS in Cormorant caps (0.12em) with CAMPING · HET GROENE HART
+// in Lato caps (0.2em) below. Colours come from --m-* custom properties (light and dark version).
+// Placeholder until the designer delivers the final logo.
+interface Props {
+  /** light version for dark backgrounds */
+  light?: boolean;
+  /** stacked mark above the text (footer) */
+  stacked?: boolean;
+  /** mark only, no word mark (horeca card) */
+  markOnly?: boolean;
+  class?: string;
+}
+const { light = false, stacked = false, markOnly = false, class: cls } = Astro.props;
+---
+
+<span class:list={['logo', { 'logo--light': light, 'logo--stacked': stacked }, cls]}>
+  <svg class="logo__mark" viewBox="0 -7 100 71" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+<path d="M58 10q1.9-1.8 3.7.1q1.6-2 3.9-.5M68.4 5.8q1.4-1.4 2.8 0q1.3-1.5 3-.4" stroke="var(--m-line,#22422B)" stroke-width=".8"/>
+<path d="M46 41.2h46" stroke="var(--m-soft,#7D9771)" stroke-width=".8"/>
+<path d="M60 41.2c.6-2.2 2.2-3.4 3.8-3.4 1.2 0 2 .6 2.6 1.6M71 41.2c.5-2.4 2-3.8 4-3.8 2.2 0 3.6 1.6 4 3.8" fill="var(--m-mid,#7D9771)"/>
+<path d="M66.6 41.2v-6.6h2.6v6.6zM67.9 34.6v-6.4" fill="var(--m-mid,#7D9771)" stroke="var(--m-mid,#7D9771)" stroke-width=".7"/>
+<path d="M66.4 34.8l1.5-5.4 1.5 5.4z" fill="var(--m-mid,#7D9771)"/>
+<path d="M1 57.5C9 47.5 30 42 52 41.6 70 41.2 86 42 99 43.6 97 55 80 62.6 60 63.6 40 64.4 14 63.4 1 57.5z" fill="var(--m-ground,#7D9771)" fill-opacity=".7"/>
+<path fill-opacity=".9" d="M1 57.5C7 51 18 47.6 34 47.2 30 54.6 22 60.4 14 62.6 8 61.6 3.6 59.8 1 57.5z" fill="var(--m-mid,#556D3D)"/>
+<path d="M34 63.6C36 58 44 56 46 53 48 50 44 47.6 52 45.4 58 43.8 66 43 70 41.4h3.4C70 44 62 45.6 57 47.4 52 49.2 54 52 52.4 55 50.4 58.6 46 61 46.6 63.8z" fill="var(--m-path,#FAF7F2)"/>
+<path d="M56 63.6C58 59 62 57.6 63 54.6 64 51.6 61.6 49.2 68 47 74 45 80 43.6 84 41.6h3C83 45 76 47.2 72 49 68 51 70 53.4 68.6 56.4 67 59.6 64 61.6 64.6 63.4z" fill="var(--m-water,#B6C2AF)"/>
+<g transform="translate(23.5 52) scale(1.24) translate(-23.5 -52)"><path d="M18.8 51.6c1.4-.8 2.4-2.6 3-6l.8-14h2.2l.8 14c.6 3.4 1.6 5.2 3 6z" fill="var(--m-trunk,#22422B)"/>
+<path d="M22.6 37l-6-5.6M24 35.6l5.4-6.4M23.2 41l-4.4-3.2" stroke="var(--m-trunk,#22422B)" stroke-width="1.6"/>
+<g fill="var(--m-dark,#22422B)"><circle cx="40.0" cy="19.6" r="3.9"/><circle cx="38.7" cy="25.1" r="3.8"/><circle cx="35.5" cy="28.9" r="4.3"/><circle cx="31.7" cy="31.2" r="4.5"/><circle cx="26.1" cy="32.5" r="4.4"/><circle cx="20.2" cy="31.9" r="3.8"/><circle cx="14.5" cy="28.9" r="5.0"/><circle cx="11.5" cy="25.5" r="4.0"/><circle cx="10.0" cy="19.7" r="5.2"/><circle cx="11.2" cy="15.1" r="4.3"/><circle cx="15.2" cy="10.5" r="3.8"/><circle cx="20.1" cy="8.2" r="4.1"/><circle cx="24.1" cy="7.5" r="3.9"/><circle cx="30.3" cy="8.3" r="5.0"/><circle cx="35.1" cy="10.7" r="4.6"/><circle cx="39.0" cy="15.5" r="4.3"/><circle cx="21.6" cy="19.1" r="4.2"/><circle cx="28.2" cy="29.1" r="5.3"/><circle cx="20.8" cy="28.1" r="5.4"/><circle cx="21.2" cy="29.8" r="6.1"/><circle cx="25.4" cy="28.7" r="5.6"/><circle cx="33.5" cy="13.1" r="4.9"/><circle cx="29.8" cy="19.5" r="5.3"/><circle cx="25.2" cy="15.5" r="5.5"/><circle cx="36.1" cy="22.3" r="6.3"/><circle cx="13.3" cy="15.2" r="4.9"/><circle cx="21.4" cy="11.7" r="5.7"/><circle cx="12.7" cy="22.9" r="6.8"/><circle cx="13.7" cy="21.5" r="4.2"/><circle cx="21.6" cy="11.2" r="7.0"/></g>
+<g fill="var(--m-light,#556D3D)"><circle cx="33.0" cy="16.9" r="3.1"/><circle cx="31.4" cy="21.0" r="3.5"/><circle cx="27.3" cy="23.9" r="3.3"/><circle cx="21.0" cy="25.0" r="2.9"/><circle cx="15.4" cy="23.3" r="3.6"/><circle cx="11.6" cy="19.4" r="3.0"/><circle cx="11.4" cy="14.2" r="3.8"/><circle cx="14.3" cy="10.5" r="3.3"/><circle cx="20.5" cy="8.1" r="3.8"/><circle cx="27.1" cy="9.0" r="3.7"/><circle cx="31.0" cy="11.7" r="3.2"/><circle cx="15.7" cy="20.2" r="4.1"/><circle cx="23.2" cy="17.7" r="3.0"/><circle cx="21.7" cy="20.0" r="3.5"/><circle cx="21.0" cy="15.9" r="3.3"/><circle cx="16.4" cy="19.1" r="4.1"/><circle cx="18.6" cy="11.2" r="3.6"/><circle cx="20.1" cy="14.1" r="4.0"/></g>
+<g fill="var(--m-dark,#22422B)" opacity=".55"><circle cx="30.6" cy="20.4" r="3.3"/><circle cx="24.6" cy="27.0" r="2.3"/><circle cx="27.5" cy="24.1" r="2.3"/><circle cx="29.9" cy="26.9" r="2.7"/><circle cx="29.1" cy="25.0" r="2.4"/><circle cx="33.4" cy="26.8" r="2.2"/></g></g>
+<path d="M4.4 57Q3.6 53.5 1.8 52.5M4.7 57Q4.3 53.5 3.4 51.2M5.0 57Q5.0 53.5 5.0 50.0M5.3 57Q5.7 53.5 6.6 51.2M5.6 57Q6.4 53.5 8.2 52.5M9.4 55.5Q8.6 51.2 6.8 50.0M9.6 55.5Q9.2 51.2 8.1 48.8M9.9 55.5Q9.7 51.2 9.4 47.6M10.1 55.5Q10.3 51.2 10.6 47.6M10.4 55.5Q10.8 51.2 11.9 48.8M10.6 55.5Q11.4 51.2 13.2 50.0M13.9 53.6Q13.1 50.6 11.3 49.7M14.2 53.6Q13.8 50.6 12.9 48.7M14.5 53.6Q14.5 50.6 14.5 47.6M14.8 53.6Q15.2 50.6 16.1 48.7M15.1 53.6Q15.9 50.6 17.7 49.7M35.9 51Q35.1 48.0 33.9 47.1M36.3 51Q36.0 48.0 35.6 45.7M36.7 51Q37.0 48.0 37.4 45.7M37.1 51Q37.9 48.0 39.1 47.1M30.4 52.6Q29.6 50.4 28.8 49.7M30.8 52.6Q30.5 50.4 30.3 48.6M31.2 52.6Q31.5 50.4 31.7 48.6M31.6 52.6Q32.4 50.4 33.2 49.7" stroke="var(--m-line,#22422B)" stroke-width=".7"/>
+<path d="M88.6 62V43.6M91.6 62V39M94.6 62V45.4M86 62c0-6 1-11.2 3.6-14.6M97.6 61c0-5-1-9.6-3.4-12.6M93 62c.4-5.6 2.2-9.6 5-12M83.6 62.6c.4-4 1.4-7 3.2-9" stroke="var(--m-line,#22422B)" stroke-width=".7"/>
+<path d="M91.6 39.4v-4.2M88.6 43.8v-3.4M94.6 45.2v-2.8" stroke="var(--m-reed,#8C6B45)" stroke-width="1.7"/>
+  </svg>
+  {!markOnly && (
+    <span class="logo__text">
+      <span class="logo__name" translate="no">NAESCAS</span>
+      <span class="logo__descriptor">Camping · Het Groene Hart</span>
+    </span>
+  )}
+</span>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--c-green-dark);
+  }
+  .logo--light {
+    color: var(--c-offwhite);
+    --m-dark: #b6c2af;
+    --m-light: #e9e4d7;
+    --m-trunk: #e9e4d7;
+    --m-ground: rgba(182, 194, 175, 0.45);
+    --m-mid: rgba(125, 151, 113, 0.75);
+    --m-path: #faf7f2;
+    --m-water: #7d9771;
+    --m-line: #e9e4d7;
+    --m-soft: #b6c2af;
+    --m-reed: #c9a87e;
+  }
+  .logo--stacked { flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; }
+  .logo__mark { flex: none; width: auto; height: 48px; }
+  .logo--stacked .logo__mark { height: 72px; }
+  .logo__text { display: grid; justify-items: start; line-height: 1; }
+  .logo--stacked .logo__text { justify-items: center; }
+  .logo__name {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.75rem;
+    letter-spacing: 0.12em;
+    margin-right: -0.12em;
+  }
+  .logo__descriptor {
+    margin-top: 0.4rem;
+    font-family: var(--font-body);
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    opacity: 0.85;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  @media (min-width: 900px) {
+    .logo__mark { height: 56px; }
+    .logo__name { font-size: 2rem; }
+    .logo__descriptor { font-size: 0.625rem; }
+  }
+</style>
